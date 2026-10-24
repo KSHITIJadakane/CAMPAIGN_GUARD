@@ -134,9 +134,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-parchment text-ink flex flex-col selection:bg-signal-blue/20">
         <RoleProvider>
           <Navbar />
-          <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-8">{children}</main>
-          <footer className="border-t border-mist/80 py-8 text-center text-xs font-mono text-ash bg-paper">
-            <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">{children}</main>
+          <footer className="border-t border-mist/80 py-6 sm:py-8 text-center text-xs font-mono text-ash bg-paper">
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
               <div className="flex items-center gap-2">
                 <span className="font-serif text-sm font-semibold text-ink">CampaignGuard Preflight Protocol</span>
                 <span className="text-mist">•</span>

@@ -218,18 +218,18 @@ export function InteractivePreflightDemo() {
   return (
     <div className="w-full bg-paper/90 backdrop-blur-md rounded-2xl border border-mist shadow-glow-card overflow-hidden transition-all duration-300">
       {/* Top Demo Interactive Header */}
-      <div className="p-4 sm:p-6 bg-linen/80 border-b border-mist flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 bg-linen/80 border-b border-mist flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 relative">
+            <span className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-blue opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-signal-blue"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-signal-blue"></span>
             </span>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-charcoal font-semibold">
-              Live Sandbox • Interactive Multimodal Engine
+            <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-charcoal font-semibold">
+              Live Sandbox • Interactive Engine
             </span>
           </div>
-          <h3 className="font-serif text-2xl text-ink font-normal mt-1">
+          <h3 className="font-serif text-xl sm:text-2xl text-ink font-normal mt-1">
             Test Campaign Preflight Verification
           </h3>
           <p className="text-xs sm:text-sm text-ash font-sans mt-0.5">
@@ -237,8 +237,8 @@ export function InteractivePreflightDemo() {
           </p>
         </div>
 
-        {/* Scenario Switcher Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-paper rounded-xl border border-mist/90 shadow-sm">
+        {/* Scenario Switcher Tabs (Responsive Grid on Mobile) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:flex items-center gap-1.5 p-1 bg-paper rounded-xl border border-mist/90 shadow-sm w-full md:w-auto">
           {(Object.keys(SCENARIOS) as ScenarioKey[]).map((key) => {
             const sc = SCENARIOS[key];
             const isActive = activeScenario === key;
@@ -246,9 +246,9 @@ export function InteractivePreflightDemo() {
               <button
                 key={key}
                 onClick={() => handleSwitchScenario(key)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-center ${
                   isActive
-                    ? "bg-twilight text-paper shadow-sm scale-100"
+                    ? "bg-twilight text-paper shadow-sm scale-100 font-semibold"
                     : "text-charcoal hover:text-ink hover:bg-linen"
                 }`}
               >
@@ -259,8 +259,8 @@ export function InteractivePreflightDemo() {
         </div>
       </div>
 
-      {/* Main Inspection Canvas */}
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Main Inspection Canvas (Responsive padding for mobile) */}
+      <div className="p-3.5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Left Col: Human Truth Contract */}
         <div className="lg:col-span-4 space-y-4">
           <div className="flex items-center justify-between">

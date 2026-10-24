@@ -48,33 +48,34 @@ export default function HomePage() {
 
       {/* Main Home Page with Smooth Entrance & Scroll Reveal */}
       <div 
-        className={`space-y-20 py-4 transition-all duration-1000 ease-out ${
+        className={`space-y-12 sm:space-y-16 md:space-y-20 py-2 sm:py-4 transition-all duration-1000 ease-out ${
           pageReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
         }`}
       >
         {/* Hero Section */}
-        <section className="text-center max-w-4xl mx-auto space-y-6 pt-4 animate-fade-in">
-          {/* Animated Beacon Badge with Replay Option */}
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-pill bg-paper border border-mist shadow-sm text-xs font-mono text-charcoal">
-            <span className="relative flex h-2 w-2">
+        <section className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-6 pt-2 sm:pt-4 animate-fade-in px-1">
+          {/* Animated Beacon Badge with Replay Option (Mobile tuned) */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-paper border border-mist shadow-xs text-xs font-mono text-charcoal max-w-full">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-blue opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-signal-blue"></span>
             </span>
-            <span className="font-semibold text-ink">CampaignGuard v0.2</span>
+            <span className="font-semibold text-ink shrink-0">CampaignGuard</span>
             <span className="text-mist">•</span>
-            <span className="text-ash">Automated Multimodal Campaign Governance</span>
-            <span className="text-mist hidden sm:inline">•</span>
+            <span className="text-ash truncate hidden sm:inline">Automated Multimodal Campaign Governance</span>
+            <span className="text-ash truncate sm:hidden">Preflight Protocol</span>
+            <span className="text-mist">•</span>
             <button
               onClick={handleReplayIntro}
-              className="text-[11px] text-signal-blue hover:text-cerulean underline hidden sm:inline cursor-pointer"
+              className="text-[11px] text-signal-blue hover:text-cerulean underline shrink-0 cursor-pointer"
               title="Replay intro animation"
             >
-              Replay Intro
+              Replay
             </button>
           </div>
 
-          {/* Master Headline */}
-          <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl text-ink font-normal tracking-tight leading-[1.1]">
+          {/* Master Headline (Mobile tuned typography) */}
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-7xl text-ink font-normal tracking-tight leading-[1.15]">
             The automated spell-checker for{" "}
             <span className="italic bg-gradient-to-r from-twilight via-cerulean to-signal-blue bg-clip-text text-transparent font-medium">
               brand facts
@@ -83,23 +84,23 @@ export default function HomePage() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-charcoal/90 font-sans leading-relaxed max-w-3xl mx-auto">
+          <p className="text-sm sm:text-lg lg:text-xl text-charcoal/90 font-sans leading-relaxed max-w-3xl mx-auto px-1">
             When marketing teams launch cross-channel campaigns, social captions claim 20% off while banner graphics announce 30%. 
             CampaignGuard establishes a single human-verified truth contract, reconciles assets across four automated inspection layers, and enforces cryptographic version-locked approvals.
           </p>
 
-          {/* Action CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+          {/* Action CTAs (Full width easy-touch targets on mobile) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 w-full max-w-xs sm:max-w-none mx-auto">
             <Link
               href="/dashboard"
-              className="px-7 py-3.5 rounded-xl bg-twilight text-paper hover:bg-ink transition-all duration-200 text-sm sm:text-base font-medium shadow-md hover:shadow-twilight/20 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 group"
+              className="px-6 py-3.5 rounded-xl bg-twilight text-paper hover:bg-ink transition-all duration-200 text-sm sm:text-base font-medium shadow-md hover:shadow-twilight/20 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 group"
             >
               <span>Launch Live Console</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               href="/demo-guide"
-              className="px-7 py-3.5 rounded-xl bg-paper border border-mist hover:border-twilight/40 text-ink transition-all duration-200 text-sm sm:text-base font-medium shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+              className="px-6 py-3.5 rounded-xl bg-paper border border-mist hover:border-twilight/40 text-ink transition-all duration-200 text-sm sm:text-base font-medium shadow-sm hover:shadow hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
             >
               <span>Judge Demo Walkthrough</span>
               <ExternalLink className="w-3.5 h-3.5 text-ash" />
@@ -109,22 +110,22 @@ export default function HomePage() {
 
         {/* Proof / Value Metrics Bar (Scroll Reveal) */}
         <ScrollReveal direction="up" delayMs={50}>
-          <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
-            <div className="p-4 rounded-xl bg-paper/80 border border-mist shadow-sm flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <span className="text-2xl sm:text-3xl font-serif text-ink font-semibold">4 Layers</span>
-              <span className="text-xs font-mono text-ash mt-1">Multi-Tier Inspection</span>
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-5xl mx-auto">
+            <div className="p-3 sm:p-4 rounded-xl bg-paper/80 border border-mist shadow-xs flex flex-col items-center text-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-serif text-ink font-semibold">4 Layers</span>
+              <span className="text-[11px] sm:text-xs font-mono text-ash mt-0.5">Multi-Tier Inspection</span>
             </div>
-            <div className="p-4 rounded-xl bg-paper/80 border border-mist shadow-sm flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <span className="text-2xl sm:text-3xl font-serif text-status-pass font-semibold">100%</span>
-              <span className="text-xs font-mono text-ash mt-1">Deterministic Facts</span>
+            <div className="p-3 sm:p-4 rounded-xl bg-paper/80 border border-mist shadow-xs flex flex-col items-center text-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-serif text-status-pass font-semibold">100%</span>
+              <span className="text-[11px] sm:text-xs font-mono text-ash mt-0.5">Deterministic Facts</span>
             </div>
-            <div className="p-4 rounded-xl bg-paper/80 border border-mist shadow-sm flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <span className="text-2xl sm:text-3xl font-serif text-signal-blue font-semibold">SHA-256</span>
-              <span className="text-xs font-mono text-ash mt-1">Cryptographic Binding</span>
+            <div className="p-3 sm:p-4 rounded-xl bg-paper/80 border border-mist shadow-xs flex flex-col items-center text-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-serif text-signal-blue font-semibold">SHA-256</span>
+              <span className="text-[11px] sm:text-xs font-mono text-ash mt-0.5">Cryptographic Seal</span>
             </div>
-            <div className="p-4 rounded-xl bg-paper/80 border border-mist shadow-sm flex flex-col items-center text-center hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <span className="text-2xl sm:text-3xl font-serif text-ink font-semibold">&lt; 400ms</span>
-              <span className="text-xs font-mono text-ash mt-1">Preflight Audit Speed</span>
+            <div className="p-3 sm:p-4 rounded-xl bg-paper/80 border border-mist shadow-xs flex flex-col items-center text-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-serif text-ink font-semibold">&lt; 400ms</span>
+              <span className="text-[11px] sm:text-xs font-mono text-ash mt-0.5">Preflight Audit Speed</span>
             </div>
           </section>
         </ScrollReveal>
