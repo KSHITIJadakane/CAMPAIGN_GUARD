@@ -58,6 +58,15 @@ export function Navbar() {
           >
             Judge Guide
           </Link>
+          <a
+            href="/CampaignGuard_Executive_Dossier.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 rounded-lg transition-colors hover:text-ink hover:bg-linen/60 flex items-center gap-1.5 text-signal-blue font-medium"
+            title="Download Executive Technical Brief & Architecture Dossier (PDF)"
+          >
+            <span>Dossier PDF</span>
+          </a>
         </div>
 
         {/* Right Controls */}
@@ -195,6 +204,16 @@ export function Navbar() {
               <span>Judge Demonstration Guide</span>
               <ArrowRight className="w-3.5 h-3.5 text-ash" />
             </Link>
+            <a
+              href="/CampaignGuard_Executive_Dossier.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 rounded-xl transition-colors flex items-center justify-between text-signal-blue hover:bg-signal-blue/5 font-semibold"
+            >
+              <span>Download Executive Dossier (PDF)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-signal-blue" />
+            </a>
           </div>
         </div>
       )}
