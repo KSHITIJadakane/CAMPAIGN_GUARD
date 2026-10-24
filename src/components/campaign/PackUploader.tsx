@@ -12,18 +12,38 @@ interface PackUploaderProps {
 
 export function PackUploader({ campaign, onInspectionComplete, onViewFindings }: PackUploaderProps) {
   const { currentUser } = useRole();
-  const latestPack = campaign.packs?.[0];
+  const latestPack = campaign?.packs?.[0];
+  const isDemoCampaign = campaign?.id === "camp_ecosip_01";
 
   const [caption, setCaption] = useState(
     latestPack?.caption ||
-      "Stay refreshed this weekend with EcoSip! Enjoy 20% off our premium flasks. Miracle cold retention promises 24 hours guaranteed chill for everyone!"
+      (isDemoCampaign
+        ? "Stay refreshed this weekend with EcoSip! Enjoy 20% off our premium flasks. Miracle cold retention promises 24 hours guaranteed chill for everyone!"
+        : "")
   );
-  const [bannerName, setBannerName] = useState(latestPack?.bannerName || "ecosip_weekend_banner.png");
+  const [bannerName, setBannerName] = useState(
+    latestPack?.bannerName || (isDemoCampaign ? "ecosip_weekend_banner.png" : "")
+  );
   const [bannerBase64, setBannerBase64] = useState<string | null>(latestPack?.bannerBase64 || null);
   const [pdfText, setPdfText] = useState(
     latestPack?.pdfText ||
-      "EcoSip 750ml Spec Sheet: Lab tested cold retention up to 12 hours. Offer: 20% discount on selected models through October 31."
+      (isDemoCampaign
+        ? "EcoSip 750ml Spec Sheet: Lab tested cold retention up to 12 hours. Offer: 20% discount on selected models through October 31."
+        : "")
   );
+
+  const handleFillSample = () => {
+    setCaption("Stay refreshed this weekend with EcoSip! Enjoy 20% off our premium flasks. Miracle cold retention promises 24 hours guaranteed chill for everyone!");
+    setBannerName("ecosip_weekend_banner.png");
+    setPdfText("EcoSip 750ml Spec Sheet: Lab tested cold retention up to 12 hours. Offer: 20% discount on selected models through October 31.");
+  };
+
+  const handleClear = () => {
+    setCaption("");
+    setBannerName("");
+    setBannerBase64(null);
+    setPdfText("");
+  };
 
   const [isInspecting, setIsInspecting] = useState(false);
   const [inspectionStage, setInspectionStage] = useState("");
@@ -129,18 +149,37 @@ export function PackUploader({ campaign, onInspectionComplete, onViewFindings }:
 
       {/* Caption Editor */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <label className="text-[12px] font-mono uppercase tracking-wider text-charcoal font-semibold flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-ash" />
             Social Copy / Instagram Caption
           </label>
-          <span className="text-[11px] font-mono text-ash">{caption.length} chars</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleFillSample}
+              className="text-[11px] font-mono text-signal-blue hover:underline cursor-pointer"
+              title="Populate test copy for fast testing"
+            >
+              ⚡ Fill Sample Copy
+            </button>
+            <span className="text-mist">•</span>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-[11px] font-mono text-ash hover:text-ink hover:underline cursor-pointer"
+            >
+              Clear
+            </button>
+            <span className="text-mist">•</span>
+            <span className="text-[11px] font-mono text-ash">{caption.length} chars</span>
+          </div>
         </div>
         <textarea
           rows={3}
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          placeholder="Type or paste the campaign copy here..."
+          placeholder="Type or paste the campaign copy here (or click 'Fill Sample Copy' above)..."
           className="w-full bg-linen border border-mist rounded-xl p-3 text-[14px] text-ink focus:border-twilight outline-none font-sans leading-relaxed"
         />
       </div>

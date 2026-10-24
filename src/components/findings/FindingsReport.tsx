@@ -19,11 +19,12 @@ interface FindingsReportProps {
   campaign: any;
   onRefresh: () => void;
   onGoToApproval?: () => void;
+  onGoToUpload?: () => void;
 }
 
-export function FindingsReport({ campaign, onRefresh, onGoToApproval }: FindingsReportProps) {
+export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUpload }: FindingsReportProps) {
   const { currentUser } = useRole();
-  const latestPack = campaign.packs?.[0];
+  const latestPack = campaign?.packs?.[0];
   const findings: FindingItem[] = latestPack?.findings || [];
   const pendingFindings = findings.filter((f) => f.resolution === "PENDING");
   const allResolved = findings.length > 0 && pendingFindings.length === 0;
@@ -88,6 +89,36 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval }: Findings
       setIsBatchResolving(false);
     }
   };
+
+  // If no pack has been submitted yet for this campaign
+  if (!latestPack) {
+    return (
+      <div className="p-8 sm:p-12 text-center bg-paper rounded-2xl border border-mist space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-linen flex items-center justify-center mx-auto border border-mist text-charcoal">
+          <Layers className="w-7 h-7 text-signal-blue" />
+        </div>
+        <div className="max-w-md mx-auto space-y-1">
+          <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-linen border border-mist text-ash">
+            Step 3 • Preflight Inspection
+          </span>
+          <h4 className="font-serif text-2xl text-ink font-normal pt-1">No Creative Assets Uploaded Yet</h4>
+          <p className="text-[13px] text-charcoal font-sans leading-relaxed">
+            The automated 4-layer inspection engine requires promotional copy, banner images, or specification sheets to evaluate against Contract truth.
+          </p>
+        </div>
+        {onGoToUpload && (
+          <div className="pt-2">
+            <button
+              onClick={onGoToUpload}
+              className="px-5 py-2.5 rounded-xl bg-signal-blue hover:bg-cerulean text-paper text-xs font-mono font-medium transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer active:scale-95"
+            >
+              <span>Go to Creative Studio (Step 2) & Upload Assets →</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

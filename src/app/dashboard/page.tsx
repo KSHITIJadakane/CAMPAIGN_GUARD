@@ -19,7 +19,8 @@ import {
   Info,
   Check,
   RotateCcw,
-  Compass
+  Compass,
+  Upload
 } from "lucide-react";
 import { CampaignCard } from "@/components/campaign/CampaignCard";
 import { ContractBuilder } from "@/components/contract/ContractBuilder";
@@ -35,7 +36,7 @@ export default function DashboardPage() {
   const { currentRole, currentUser, setRole } = useRole();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<"contract" | "creator" | "findings" | "approval" | "audit">("findings");
+  const [activeTab, setActiveTab] = useState<"contract" | "creator" | "findings" | "approval" | "audit">("contract");
   const [loading, setLoading] = useState(true);
   const [showGuide, setShowGuide] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -56,7 +57,14 @@ export default function DashboardPage() {
           const updated = data.campaigns.find((c: any) => c.id === selectedCampaign.id);
           if (updated) setSelectedCampaign(updated);
         } else if (data.campaigns.length > 0) {
-          setSelectedCampaign(data.campaigns[0]);
+          const first = data.campaigns[0];
+          setSelectedCampaign(first);
+          if (first.packs && first.packs.length > 0 && first.packs[0].findings?.some((f: any) => f.resolution === "PENDING")) {
+            // Only switch to findings if it's the demo campaign with pre-loaded issues
+            setActiveTab("findings");
+          } else {
+            setActiveTab("contract");
+          }
         }
       }
     } catch (e) {
@@ -418,23 +426,71 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Campaign Selector Pills if multiple */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-mono uppercase text-ash mr-1">Select Campaign:</span>
-            {campaigns.map((camp) => (
-              <button
-                key={camp.id}
-                onClick={() => setSelectedCampaign(camp)}
-                className={`px-3 py-1.5 rounded-pill text-[13px] font-medium transition-all border ${
-                  selectedCampaign?.id === camp.id
-                    ? "bg-twilight text-paper border-twilight shadow-sm"
-                    : "bg-paper text-charcoal border-mist hover:border-twilight/50"
-                }`}
-              >
-                {camp.title}
-              </button>
-            ))}
-          </div>
+          {/* Campaign Selector & Workspace Mode Segregation */}
+          {(() => {
+            const demoCampaigns = campaigns.filter((c) => c.id === "camp_ecosip_01" || c.title.includes("EcoSip"));
+            const liveCampaigns = campaigns.filter((c) => c.id !== "camp_ecosip_01" && !c.title.includes("EcoSip"));
+
+            return (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-linen/70 rounded-2xl border border-mist">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-ash font-semibold px-1">
+                    Campaign:
+                  </span>
+
+                  {/* Live user-created campaigns */}
+                  {liveCampaigns.map((camp) => (
+                    <button
+                      key={camp.id}
+                      onClick={() => {
+                        setSelectedCampaign(camp);
+                        if (!camp.packs?.[0]) setActiveTab("contract");
+                      }}
+                      className={`px-3 py-1.5 rounded-pill text-[12px] sm:text-[13px] font-medium transition-all border flex items-center gap-1.5 cursor-pointer ${
+                        selectedCampaign?.id === camp.id
+                          ? "bg-twilight text-paper border-twilight shadow-sm"
+                          : "bg-paper text-charcoal border-mist hover:border-twilight/50"
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-status-pass" />
+                      <span>{camp.title}</span>
+                    </button>
+                  ))}
+
+                  {/* Pre-seeded demo benchmark */}
+                  {demoCampaigns.map((camp) => (
+                    <button
+                      key={camp.id}
+                      onClick={() => {
+                        setSelectedCampaign(camp);
+                        setActiveTab("findings");
+                      }}
+                      className={`px-3 py-1.5 rounded-pill text-[12px] sm:text-[13px] font-medium transition-all border flex items-center gap-1.5 cursor-pointer ${
+                        selectedCampaign?.id === camp.id
+                          ? "bg-signal-blue text-paper border-signal-blue shadow-sm"
+                          : "bg-paper text-charcoal border-signal-blue/40 hover:border-signal-blue"
+                      }`}
+                      title="Pre-configured hackathon demo benchmark"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-status-warn" />
+                      <span>{camp.title}</span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-pill bg-paper/20 uppercase font-bold">
+                        Demo Benchmark
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setIsCreating(true)}
+                  className="text-xs font-mono text-signal-blue hover:text-twilight font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 px-2 py-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Create Blank Campaign</span>
+                </button>
+              </div>
+            );
+          })()}
 
           {selectedCampaign && (() => {
             const latestPack = selectedCampaign.packs?.[0];
@@ -444,6 +500,7 @@ export default function DashboardPage() {
             const isApproved = selectedCampaign.status === "APPROVED";
             const isInvalidated = selectedCampaign.status === "INVALIDATED";
             const isClean = totalFindings > 0 && pendingCount === 0;
+            const isDemo = selectedCampaign.id === "camp_ecosip_01" || selectedCampaign.title.includes("EcoSip");
 
             const pipelineSteps = [
               {
@@ -460,7 +517,7 @@ export default function DashboardPage() {
                 stepNum: "2",
                 title: "Creative Studio",
                 owner: "Creator",
-                badge: latestPack ? `Rev ${latestPack.revision}` : "Pending",
+                badge: latestPack ? `Rev ${latestPack.revision}` : "Awaiting Upload",
                 badgeColor: latestPack ? "bg-signal-blue/15 text-signal-blue" : "bg-linen text-ash",
                 isCurrent: activeTab === "creator",
               },
@@ -469,8 +526,8 @@ export default function DashboardPage() {
                 stepNum: "3",
                 title: "Preflight Scan",
                 owner: "Automated 4-Layer",
-                badge: pendingCount > 0 ? `${pendingCount} Issues` : isClean ? "Reconciled" : "Verified",
-                badgeColor: pendingCount > 0 ? "bg-status-error-bg text-status-error" : "bg-status-pass-bg text-status-pass",
+                badge: !latestPack ? "Pending Upload" : pendingCount > 0 ? `${pendingCount} Issues` : isClean ? "Reconciled" : "Verified",
+                badgeColor: !latestPack ? "bg-linen text-ash" : pendingCount > 0 ? "bg-status-error-bg text-status-error" : "bg-status-pass-bg text-status-pass",
                 isCurrent: activeTab === "findings",
               },
               {
@@ -478,7 +535,7 @@ export default function DashboardPage() {
                 stepNum: "4",
                 title: "Gatekeeper Lock",
                 owner: "Reviewer",
-                badge: isApproved ? "Locked" : isInvalidated ? "Revoked" : "Pending",
+                badge: !latestPack ? "Pending" : isApproved ? "Locked" : isInvalidated ? "Revoked" : "Pending",
                 badgeColor: isApproved ? "bg-status-pass-bg text-status-pass" : isInvalidated ? "bg-status-error-bg text-status-error" : "bg-linen text-ash",
                 isCurrent: activeTab === "approval",
               },
@@ -486,6 +543,29 @@ export default function DashboardPage() {
 
             return (
               <div className="space-y-6">
+                {/* Demo Scenario Explanatory Callout */}
+                {isDemo && (
+                  <div className="p-4 bg-paper rounded-2xl border border-signal-blue/40 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-sans animate-fade-in">
+                    <div className="flex items-start md:items-center gap-2.5">
+                      <span className="px-2.5 py-1 rounded-pill bg-signal-blue/15 text-signal-blue text-[11px] font-mono font-bold shrink-0 border border-signal-blue/30">
+                        🧪 PRE-SEEDED DEMO SCENARIO
+                      </span>
+                      <span className="text-charcoal leading-relaxed">
+                        You are viewing the pre-configured <strong>EcoSip Flash Sale</strong> benchmark. It intentionally includes 3 simulated contradictions so judges can test preflight detection, 1-click fixes, and SHA-256 sealing without uploading files.
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setIsCreating(true)}
+                        className="px-3 py-1.5 rounded-xl bg-twilight hover:bg-ink text-paper text-xs font-mono font-medium transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-signal-blue" />
+                        <span>Start Blank Live Campaign</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Campaign Header Details */}
                 <div className="p-5 sm:p-6 bg-paper rounded-2xl border border-mist flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-subtle-card">
                   <div>
@@ -499,7 +579,7 @@ export default function DashboardPage() {
                       </span>
                       <span className="text-mist">•</span>
                       <span className="text-[11px] font-mono text-charcoal">
-                        Asset Rev {latestPack?.revision || 1}
+                        {latestPack ? `Asset Rev ${latestPack.revision}` : "No Assets Uploaded Yet"}
                       </span>
                     </div>
                     <h2 className="font-serif text-2xl sm:text-3xl text-ink font-normal">{selectedCampaign.title}</h2>
@@ -513,7 +593,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* 1. VISUAL 4-STAGE LIFECYCLE STEPPER (Makes workflow immediately obvious) */}
+                {/* 1. VISUAL 4-STAGE LIFECYCLE STEPPER */}
                 <div className="bg-linen/70 p-3 sm:p-4 rounded-2xl border border-mist space-y-2">
                   <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-ash font-semibold flex items-center gap-1.5">
@@ -562,10 +642,59 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* 2. SMART RECOMMENDED NEXT ACTION CARD (Eliminates confusion on what to do) */}
+                {/* 2. SMART RECOMMENDED NEXT ACTION CARD */}
                 <div className="p-4 sm:p-5 rounded-2xl border transition-all duration-300 shadow-sm bg-paper flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  {/* State 0: No assets uploaded yet (Fresh / Blank Campaign) */}
+                  {!latestPack && (
+                    <>
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-linen flex items-center justify-center shrink-0 mt-0.5 border border-mist">
+                          <Upload className="w-5 h-5 text-signal-blue" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-linen border border-mist text-charcoal font-semibold">
+                              Next Step • Step 2
+                            </span>
+                            <span className="text-xs font-mono text-ash">
+                              Awaiting Creative Submission
+                            </span>
+                          </div>
+                          <h3 className="font-serif text-lg text-ink font-normal mt-0.5">
+                            Upload Assets in Creative Studio to Begin Audit
+                          </h3>
+                          <p className="text-xs text-charcoal font-sans mt-0.5 leading-relaxed max-w-xl">
+                            Baseline Contract v{activeContract?.version || 1} is established. No creative assets have been submitted for inspection yet. Upload your social copy, banner image, or spec sheet to execute the automated 4-layer preflight scan.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            setActiveTab("creator");
+                            setRole("CREATOR");
+                          }}
+                          className="px-4 py-2.5 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Go to Creative Studio (Step 2) →</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveTab("contract");
+                            setRole("BRAND_MANAGER");
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        >
+                          <span>Review Contract Truth</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+
                   {/* State A: Contradictions pending */}
-                  {pendingCount > 0 && !isApproved && (
+                  {latestPack && pendingCount > 0 && !isApproved && (
                     <>
                       <div className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-status-error-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-error-border">
@@ -610,7 +739,7 @@ export default function DashboardPage() {
                   )}
 
                   {/* State B: Clean & ready for gatekeeper lock */}
-                  {isClean && !isApproved && (
+                  {latestPack && isClean && !isApproved && (
                     <>
                       <div className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-status-pass-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-pass-border">
@@ -646,7 +775,7 @@ export default function DashboardPage() {
                   )}
 
                   {/* State C: Cryptographically Approved */}
-                  {isApproved && (
+                  {latestPack && isApproved && (
                     <>
                       <div className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-status-pass-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-pass-border">
@@ -685,7 +814,7 @@ export default function DashboardPage() {
                   )}
 
                   {/* State D: Approval Invalidated */}
-                  {isInvalidated && (
+                  {latestPack && isInvalidated && (
                     <>
                       <div className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-status-error-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-error-border">
@@ -839,7 +968,14 @@ export default function DashboardPage() {
                     <FindingsReport 
                       campaign={selectedCampaign} 
                       onRefresh={fetchCampaigns} 
-                      onGoToApproval={() => setActiveTab("approval")}
+                      onGoToApproval={() => {
+                        setActiveTab("approval");
+                        setRole("REVIEWER");
+                      }}
+                      onGoToUpload={() => {
+                        setActiveTab("creator");
+                        setRole("CREATOR");
+                      }}
                     />
                   )}
 
