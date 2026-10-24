@@ -6,8 +6,6 @@ import {
   Sparkles, 
   CheckCircle2, 
   Layers, 
-  FileCheck2, 
-  Lock, 
   Cpu, 
   Fingerprint,
   ArrowRight
@@ -23,55 +21,55 @@ interface StageLine {
 const STAGE_LINES: StageLine[] = [
   { 
     threshold: 0, 
-    phase: "PHASE 01 / INITIALIZATION", 
+    phase: "PHASE 01 / INIT", 
     line: "Connecting to CampaignGuard Distributed Governance Mesh...",
     activeLayerIndex: 0
   },
   { 
-    threshold: 12, 
-    phase: "PHASE 02 / CONTRACT SYNC", 
+    threshold: 14, 
+    phase: "PHASE 02 / CONTRACT", 
     line: "Establishing single human-verified canonical truth contract...",
     activeLayerIndex: 0
   },
   { 
-    threshold: 25, 
-    phase: "PHASE 03 / DETERMINISTIC FACTS", 
+    threshold: 28, 
+    phase: "PHASE 03 / FACTS", 
     line: "Calibrating Layer 1: Numerical discounts, expiry dates & scopes...",
     activeLayerIndex: 1
   },
   { 
-    threshold: 40, 
-    phase: "PHASE 04 / MULTIMODAL INGESTION", 
+    threshold: 44, 
+    phase: "PHASE 04 / OCR", 
     line: "Extracting high-fidelity OCR text from submitted banner graphics...",
     activeLayerIndex: 2
   },
   { 
-    threshold: 54, 
-    phase: "PHASE 05 / CROSS-ASSET RECONCILER", 
+    threshold: 58, 
+    phase: "PHASE 05 / RECONCILE", 
     line: "Cross-referencing social caption copy against promotional visual text...",
     activeLayerIndex: 2
   },
   { 
-    threshold: 68, 
-    phase: "PHASE 06 / BRAND VOCABULARY GUARD", 
-    line: "Enforcing Layer 3: Scanning prohibited superlatives & missing disclaimers...",
+    threshold: 72, 
+    phase: "PHASE 06 / POLICY", 
+    line: "Enforcing Layer 3: Scanning prohibited superlatives & claim guardrails...",
     activeLayerIndex: 3
   },
   { 
-    threshold: 82, 
-    phase: "PHASE 07 / ACCESSIBILITY AUDIT", 
+    threshold: 84, 
+    phase: "PHASE 07 / A11Y", 
     line: "Auditing Layer 4: Screen-reader alt text & WCAG contrast compliance...",
     activeLayerIndex: 3
   },
   { 
-    threshold: 92, 
-    phase: "PHASE 08 / CRYPTOGRAPHIC BINDING", 
+    threshold: 93, 
+    phase: "PHASE 08 / CRYPTO", 
     line: "Generating SHA-256 revision hash and sealing version-locked approval...",
     activeLayerIndex: 4
   },
   { 
     threshold: 99, 
-    phase: "SYSTEM READY", 
+    phase: "PROTOCOL READY", 
     line: "CampaignGuard Preflight Protocol Initialized. Welcome.",
     activeLayerIndex: 4
   },
@@ -102,8 +100,8 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
       return;
     }
 
-    // Paced smoothly over ~6.5 seconds:
-    // interval fires every 55ms, incrementing smoothly
+    // Paced to 4 seconds total:
+    // 0 to 100% takes ~3.55 seconds (88 ticks * 40ms)
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -111,34 +109,33 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
           return 100;
         }
 
-        // Smooth gradual pacing with deliberate pauses at milestones
-        let delta = 0.75;
-        if (prev > 20 && prev < 30) delta = 0.65;
-        if (prev > 50 && prev < 60) delta = 0.60;
-        if (prev > 80 && prev < 90) delta = 0.55;
-        if (prev >= 95) delta = 0.45;
+        // Smooth organic increments averaging ~1.15% per tick
+        let delta = 1.15;
+        if (prev > 30 && prev < 45) delta = 1.05;
+        if (prev > 70 && prev < 85) delta = 1.1;
+        if (prev >= 95) delta = 0.9;
 
         const next = Math.min(100, Math.round((prev + delta) * 10) / 10);
         return next;
       });
-    }, 50);
+    }, 40);
 
     return () => clearInterval(interval);
   }, [onComplete]);
 
   useEffect(() => {
     if (progress >= 100) {
-      // Hold on 100% for 650ms so user comfortably reads the final state
+      // Hold on 100% for 450ms (~4.0s total mark), then glide up
       const glideTimer = setTimeout(() => {
         setIsGlidingUp(true);
-      }, 650);
+      }, 450);
 
-      // Transition complete, reveal home page
+      // Transition completes at ~4.8s, reveal home page
       const doneTimer = setTimeout(() => {
         setIsDone(true);
         sessionStorage.setItem("cg_intro_seen", "true");
         if (onComplete) onComplete();
-      }, 1450);
+      }, 1150);
 
       return () => {
         clearTimeout(glideTimer);
@@ -153,7 +150,7 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
       setIsDone(true);
       sessionStorage.setItem("cg_intro_seen", "true");
       if (onComplete) onComplete();
-    }, 450);
+    }, 350);
   };
 
   if (isDone) return null;
@@ -167,29 +164,29 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col justify-between bg-parchment select-none p-6 sm:p-12 transition-all duration-1000 ease-[cubic-bezier(0.76,0,0.24,1)] ${
-        isGlidingUp ? "-translate-y-full opacity-90 shadow-2xl scale-[0.98]" : "translate-y-0 opacity-100 scale-100"
+      className={`fixed inset-0 z-[100] h-screen h-[100dvh] w-screen overflow-hidden flex flex-col justify-between bg-parchment select-none p-4 sm:p-6 md:p-8 transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] ${
+        isGlidingUp ? "-translate-y-full opacity-90 shadow-2xl scale-[0.99]" : "translate-y-0 opacity-100 scale-100"
       }`}
       style={{
         backgroundImage: `
-          radial-gradient(at 15% 15%, rgba(65, 161, 207, 0.12) 0px, transparent 45%),
-          radial-gradient(at 85% 15%, rgba(40, 40, 52, 0.08) 0px, transparent 50%),
-          radial-gradient(at 50% 85%, rgba(65, 161, 207, 0.09) 0px, transparent 60%),
+          radial-gradient(at 15% 15%, rgba(65, 161, 207, 0.12) 0px, transparent 40%),
+          radial-gradient(at 85% 15%, rgba(40, 40, 52, 0.08) 0px, transparent 45%),
+          radial-gradient(at 50% 85%, rgba(65, 161, 207, 0.09) 0px, transparent 55%),
           radial-gradient(at 50% 50%, rgba(249, 250, 247, 0.9) 0px, transparent 80%)
         `,
       }}
     >
       {/* Top Bar: Brand Identifier + Skip Control */}
-      <div className="flex items-center justify-between w-full max-w-6xl mx-auto pt-2">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-twilight flex items-center justify-center text-paper border border-twilight/40 shadow-sm">
+      <div className="flex items-center justify-between w-full max-w-5xl mx-auto shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-twilight flex items-center justify-center text-paper border border-twilight/40 shadow-sm">
             <ShieldCheck className="w-4 h-4 text-signal-blue" />
           </div>
           <div className="flex flex-col">
-            <span className="font-serif text-lg font-semibold text-ink leading-tight">
+            <span className="font-serif text-base font-semibold text-ink leading-tight">
               CampaignGuard
             </span>
-            <span className="text-[10px] font-mono tracking-widest uppercase text-ash font-medium">
+            <span className="text-[10px] font-mono tracking-wider uppercase text-ash font-medium">
               cg.kshitijpro.xyz
             </span>
           </div>
@@ -197,99 +194,95 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
 
         <button
           onClick={handleSkip}
-          className="group flex items-center gap-2 px-4 py-2 rounded-pill border border-mist bg-paper/90 text-xs font-mono text-charcoal hover:text-ink hover:border-twilight hover:shadow-sm transition-all"
+          className="group flex items-center gap-1.5 px-3 py-1.5 rounded-pill border border-mist bg-paper/90 text-xs font-mono text-charcoal hover:text-ink hover:border-twilight transition-all shadow-sm"
         >
-          <span>Skip Protocol Intro</span>
-          <ArrowRight className="w-3.5 h-3.5 text-ash transition-transform group-hover:translate-x-1" />
+          <span>Skip</span>
+          <ArrowRight className="w-3 h-3 text-ash transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
 
-      {/* Main Center Stage (Expansive, Full-Screen, Cinema-Sized) */}
-      <div className="flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto my-auto space-y-10 py-6">
-        {/* Large Brand Emblem with Pulsing Concentric Rings */}
+      {/* Main Center Stage (Fit perfectly within viewport, no overflow) */}
+      <div className="flex flex-col items-center justify-center text-center max-w-3xl w-full mx-auto my-auto space-y-4 sm:space-y-6 py-2 shrink">
+        {/* Brand Emblem with Contained Ambient Glow */}
         <div className="relative flex items-center justify-center">
-          {/* Orbital Wave 1 */}
-          <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-signal-blue/10 animate-ping opacity-60" />
-          {/* Orbital Wave 2 */}
-          <div className="absolute w-56 h-56 sm:w-72 sm:h-72 rounded-full border border-signal-blue/20 animate-pulse-slow" />
-          {/* Orbital Wave 3 */}
-          <div className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-twilight/10 border-dashed" />
+          {/* Subtle Ambient Ring */}
+          <div className="absolute w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-signal-blue/15 animate-ping opacity-60 pointer-events-none" />
+          <div className="absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full border border-signal-blue/25 animate-pulse-slow pointer-events-none" />
 
-          {/* Central Squircle Crest */}
-          <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-twilight shadow-glow-blue flex items-center justify-center text-paper border-2 border-signal-blue/40 transform transition-transform duration-500 hover:scale-105">
-            <ShieldCheck className="w-12 h-12 sm:w-16 sm:h-16 text-signal-blue" />
-            <Sparkles className="w-5 h-5 text-cerulean absolute -top-1.5 -right-1.5 animate-bounce" />
+          {/* Central Logo Squircle */}
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-twilight shadow-glow-blue flex items-center justify-center text-paper border border-signal-blue/40">
+            <ShieldCheck className="w-9 h-9 sm:w-11 sm:h-11 text-signal-blue" />
+            <Sparkles className="w-4 h-4 text-cerulean absolute -top-1 -right-1 animate-bounce" />
           </div>
         </div>
 
-        {/* Brand Protocol Titles */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-linen border border-mist text-xs font-mono text-ash font-medium">
-            <span className="w-2 h-2 rounded-full bg-signal-blue animate-pulse" />
+        {/* Protocol Title & Phase Badge */}
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-pill bg-linen border border-mist text-[11px] font-mono text-ash font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-signal-blue animate-pulse" />
             <span>{currentStage.phase}</span>
           </div>
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-ink font-normal tracking-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl text-ink font-normal tracking-tight">
             Automated Campaign Governance
           </h1>
         </div>
 
         {/* Smooth Dynamic Catchy Line Box */}
-        <div className="w-full max-w-2xl px-6 py-4 rounded-2xl bg-paper/80 backdrop-blur-md border border-mist/90 shadow-subtle-card min-h-[76px] flex items-center justify-center transition-all duration-300">
+        <div className="w-full max-w-xl px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-paper/85 backdrop-blur-md border border-mist/90 shadow-subtle-card min-h-[56px] flex items-center justify-center transition-all duration-200">
           <p
             key={currentStage.line}
-            className="text-sm sm:text-lg font-sans text-charcoal/95 leading-relaxed italic animate-fade-in transition-all text-center"
+            className="text-xs sm:text-sm md:text-base font-sans text-charcoal/95 leading-relaxed italic animate-fade-in transition-all text-center"
           >
             "{currentStage.line}"
           </p>
         </div>
 
-        {/* Master Progress Display & Wide Loading Track */}
-        <div className="w-full max-w-2xl sm:max-w-3xl space-y-4">
-          {/* Massive, Prominent Percentage Readout */}
-          <div className="flex items-baseline justify-between px-2">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-mono text-ash">
-              <span className="inline-block w-2 h-2 rounded-full bg-signal-blue animate-ping" />
-              <span className="uppercase tracking-wider">
-                {intProgress >= 100 ? "Telemetry Locked • Verification Complete" : "Calibrating Multi-Layer Checks"}
+        {/* Master Progress Display & Track */}
+        <div className="w-full max-w-xl space-y-3">
+          {/* Percentage & Telemetry State */}
+          <div className="flex items-baseline justify-between px-1">
+            <div className="flex items-center gap-1.5 text-xs font-mono text-ash">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-signal-blue animate-ping" />
+              <span className="uppercase tracking-wider text-[11px]">
+                {intProgress >= 100 ? "Ready • Protocol Sealed" : "Calibrating 4 Layers"}
               </span>
             </div>
 
             <div className="flex items-baseline gap-1 font-mono font-bold tracking-tight text-ink">
-              <span className="text-5xl sm:text-7xl lg:text-8xl">
+              <span className="text-4xl sm:text-5xl md:text-6xl">
                 {intProgress.toString().padStart(3, "0")}
               </span>
-              <span className="text-2xl sm:text-3xl text-signal-blue">%</span>
+              <span className="text-lg sm:text-xl text-signal-blue">%</span>
             </div>
           </div>
 
-          {/* Wide Gradient Progress Bar */}
-          <div className="w-full h-3 sm:h-4 bg-mist/50 rounded-full p-0.5 sm:p-1 border border-mist shadow-inner overflow-hidden">
+          {/* Slim Gradient Progress Bar */}
+          <div className="w-full h-2.5 sm:h-3 bg-mist/50 rounded-full p-0.5 border border-mist shadow-inner overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-signal-blue via-cerulean to-twilight rounded-full transition-all duration-100 ease-out shadow-sm relative"
+              className="h-full bg-gradient-to-r from-signal-blue via-cerulean to-twilight rounded-full transition-all duration-75 ease-out relative"
               style={{ width: `${progress}%` }}
             >
-              {/* Glowing leader dot */}
-              <div className="absolute right-0 top-0 bottom-0 w-3 bg-white rounded-full opacity-75 shadow-glow-blue animate-pulse" />
+              <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-white rounded-full opacity-80 shadow-glow-blue animate-pulse" />
             </div>
           </div>
 
           {/* Sequential 4-Layer Telemetry Activation Pills */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
             {INSPECTION_LAYERS.map((layer, idx) => {
               const Icon = layer.icon;
               const isLayerActive = currentStage.activeLayerIndex >= idx + 1 || intProgress >= 100;
               return (
                 <div
                   key={layer.name}
-                  className={`px-3 py-2 rounded-xl border text-xs font-mono flex items-center gap-2 transition-all duration-300 ${
+                  className={`px-2 py-1.5 rounded-lg border text-[11px] font-mono flex items-center gap-1.5 transition-all duration-200 ${
                     isLayerActive
-                      ? "bg-paper border-signal-blue text-ink shadow-sm"
-                      : "bg-linen/60 border-mist/80 text-ash/70"
+                      ? "bg-paper border-signal-blue text-ink shadow-xs"
+                      : "bg-linen/50 border-mist/70 text-ash/60"
                   }`}
                 >
                   <Icon
-                    className={`w-3.5 h-3.5 ${
-                      isLayerActive ? "text-status-pass" : "text-ash/50"
+                    className={`w-3 h-3 ${
+                      isLayerActive ? "text-status-pass" : "text-ash/40"
                     }`}
                   />
                   <span className="truncate">{layer.name}</span>
@@ -301,9 +294,9 @@ export function IntroPreloader({ onComplete }: IntroPreloaderProps) {
       </div>
 
       {/* Bottom Telemetry Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-ash w-full max-w-6xl mx-auto border-t border-mist/80 pt-4 gap-2">
-        <span>Deterministic Fact Verification • Zero Embedding Hallucination</span>
-        <span className="text-signal-blue font-semibold">SHA-256 Revision Lock • Round 2 MVP</span>
+      <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-ash w-full max-w-5xl mx-auto border-t border-mist/70 pt-2.5 shrink-0 gap-1">
+        <span>Deterministic Fact Verification • Zero Hallucinations</span>
+        <span className="text-signal-blue font-semibold">SHA-256 Revision Lock</span>
       </div>
     </div>
   );
