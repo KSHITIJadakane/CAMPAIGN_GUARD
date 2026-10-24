@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampaignGuard — Round 2 Submission</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #2c2c2c;
+    background: #fefffc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ─── PAGE CONTAINERS ─── */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 28mm 22mm 20mm 22mm;
+    page-break-after: always;
+    position: relative;
+    background: #fefffc;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* ─── PAGE HEADER BAR ─── */
+  .page-header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6mm;
+    background: linear-gradient(135deg, #282834, #1f1f29);
+  }
+  .page-footer {
+    position: absolute;
+    bottom: 8mm; left: 22mm; right: 22mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #b4b8b4;
+  }
+
+  /* ─── TYPOGRAPHY ─── */
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: #171717;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #171717;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid #dee2de;
+  }
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #41a1cf;
+    margin-bottom: 6px;
+  }
+  p {
+    font-size: 11px;
+    line-height: 1.55;
+    color: #444141;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #646464;
+    margin-bottom: 16px;
+  }
+  .tag-line {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #41a1cf;
+    margin-bottom: 18px;
+  }
+
+  /* ─── LINKS STRIP ─── */
+  .links-strip {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .link-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border: 1px solid #41a1cf;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #41a1cf;
+    text-decoration: none;
+  }
+  .link-chip .label { color: #646464; font-weight: 400; }
+
+  /* ─── METRIC CARDS ─── */
+  .metrics-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .metric-card {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #dee2de;
+    border-radius: 8px;
+    background: #ffffff;
+    text-align: center;
+  }
+  .metric-card .value {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #171717;
+    line-height: 1.1;
+  }
+  .metric-card .label {
+    font-size: 9px;
+    color: #646464;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 3px;
+  }
+
+  /* ─── TABLES ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 10.5px;
+  }
+  th {
+    text-align: left;
+    padding: 6px 8px;
+    background: #282834;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  th:first-child { border-radius: 6px 0 0 0; }
+  th:last-child { border-radius: 0 6px 0 0; }
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eef0ee;
+    color: #444141;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f9faf7; }
+
+  /* ─── BADGE ─── */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge-pass { background: #e6f9e9; color: #1a7a2e; }
+  .badge-new { background: #e8f4fc; color: #0072a3; }
+  .badge-r3 { background: #fef3e2; color: #9a6400; }
+  .badge-red { background: #fde8e8; color: #b91c1c; }
+  .badge-tech { background: #f0f0f8; color: #3b3b6d; }
+
+  /* ─── CHECKMARK LIST ─── */
+  ul.check-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+  ul.check-list li {
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: #444141;
+    padding: 2px 0 2px 18px;
+    position: relative;
+  }
+  ul.check-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #1a7a2e;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  /* ─── NUMBERED LIST ─── */
+  ol.num-list {
+    list-style: none;
+    counter-reset: num;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+  ol.num-list li {
+    font-size: 10.5px;
+    line-height: 1.55;
+    color: #444141;
+    padding: 4px 0 4px 24px;
+    position: relative;
+    counter-increment: num;
+  }
+  ol.num-list li::before {
+    content: counter(num);
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #282834;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 4px;
+  }
+
+  /* ─── SCREENSHOTS ─── */
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .screenshot-card {
+    border: 1px solid #dee2de;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .screenshot-card img {
+    width: 100%;
+    display: block;
+  }
+  .screenshot-card .cap {
+    padding: 5px 8px;
+    font-size: 9px;
+    color: #646464;
+    font-weight: 500;
+    background: #f9faf7;
+    text-align: center;
+  }
+
+  .screenshot-full {
+    border: 1px solid #dee2de;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    margin-bottom: 14px;
+  }
+  .screenshot-full img {
+    width: 100%;
+    display: block;
+  }
+  .screenshot-full .cap {
+    padding: 5px 8px;
+    font-size: 9px;
+    color: #646464;
+    font-weight: 500;
+    background: #f9faf7;
+    text-align: center;
+  }
+
+  /* ─── FLOW DIAGRAM ─── */
+  .flow-box {
+    background: #ffffff;
+    border: 1px solid #dee2de;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .flow-box pre {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 10px;
+    line-height: 1.5;
+    color: #282834;
+    white-space: pre;
+  }
+
+  /* ─── SECTION SPACER ─── */
+  .spacer { height: 10px; }
+  .spacer-lg { height: 18px; }
+
+  /* ─── IMPROVEMENT CARD ─── */
+  .improvement-card {
+    border: 1.5px solid #41a1cf;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: #f8fbfe;
+  }
+  .improvement-card .title {
+    font-weight: 600;
+    font-size: 12px;
+    color: #171717;
+    margin-bottom: 4px;
+  }
+  .improvement-card p {
+    font-size: 10.5px;
+    margin-bottom: 0;
+  }
+
+  /* ─── TWO COLUMN ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* ─── DIVIDER ─── */
+  hr.section-divider {
+    border: none;
+    border-top: 1px solid #dee2de;
+    margin: 14px 0;
+  }
+
+  .col-section {
+    padding: 10px 12px;
+    border: 1px solid #dee2de;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+  .col-section h3 { margin-bottom: 6px; }
+
+  /* ─── COVER HERO ─── */
+  .cover-hero {
+    background: linear-gradient(160deg, #282834 0%, #1f1f29 50%, #0f0f1a 100%);
+    border-radius: 12px;
+    padding: 32px 28px;
+    color: #ffffff;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-hero::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(65,161,207,0.15) 0%, transparent 70%);
+  }
+  .cover-hero h1 {
+    color: #ffffff;
+    font-size: 42px;
+    margin-bottom: 4px;
+  }
+  .cover-hero .round-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid #41a1cf;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #41a1cf;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .cover-hero .desc {
+    font-size: 14px;
+    color: #b4b8b4;
+    line-height: 1.5;
+    max-width: 440px;
+  }
+
+  .change-item {
+    padding: 6px 10px;
+    border-left: 3px solid #41a1cf;
+    margin-bottom: 8px;
+    background: #f8fbfe;
+    border-radius: 0 6px 6px 0;
+  }
+  .change-item .label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #171717;
+    margin-bottom: 2px;
+  }
+  .change-item p {
+    font-size: 10px;
+    margin-bottom: 0;
+    color: #444141;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 1 — COVER & PROJECT OVERVIEW                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <div class="cover-hero">
+    <div class="round-badge">Round 2 — The Build</div>
+    <h1>CampaignGuard</h1>
+    <p class="desc">
+      AI-Powered Pre-Publication Preflight Checker for Marketing Campaigns.
+      Catches contradictions, enforces brand contracts, and locks approved assets
+      with cryptographic proof — before a single ad dollar is spent.
+    </p>
+  </div>
+
+  <div class="links-strip">
+    <div class="link-chip">
+      <span class="label">Live:</span> cg.kshitijpro.xyz
+    </div>
+    <div class="link-chip">
+      <span class="label">Repo:</span> github.com/KSHITIJadakane/CAMPAIGN_GUARD
+    </div>
+    <div class="link-chip">
+      <span class="label">Demo:</span> cg.kshitijpro.xyz/dashboard
+    </div>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="value">5</div>
+      <div class="label">Workflow Stages</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">4</div>
+      <div class="label">Check Layers</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">3</div>
+      <div class="label">User Roles</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">&lt;10s</div>
+      <div class="label">Audit Time</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">SHA-256</div>
+      <div class="label">Crypto Lock</div>
+    </div>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <table>
+    <tr>
+      <th style="width:30%">The Problem</th>
+      <th>Real-World Impact</th>
+    </tr>
+    <tr>
+      <td><strong>Caption says 20% OFF, poster says 50% OFF</strong></td>
+      <td>Brand forced to honor wrong discount → revenue loss of thousands per campaign</td>
+    </tr>
+    <tr>
+      <td><strong>Creator skips mandatory disclaimers</strong></td>
+      <td>FTC / ASCI penalty: $10,000+ per occurrence in regulated markets</td>
+    </tr>
+    <tr>
+      <td><strong>Unapproved claims: "100% Organic"</strong></td>
+      <td>Legal liability, product recall risk, consumer trust damage</td>
+    </tr>
+    <tr>
+      <td><strong>Manual review via Slack/email</strong></td>
+      <td>60+ hours/month wasted, no audit trail, errors slip through fatigue</td>
+    </tr>
+    <tr>
+      <td><strong>Post-publication discovery</strong></td>
+      <td>Damage already done — ad spend wasted, brand reputation hit</td>
+    </tr>
+  </table>
+
+  <h2>Our Solution — CampaignGuard</h2>
+  <div class="flow-box">
+    <pre>
+ ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐     ┌───────────┐     ┌────────────┐
+ │ 1. CONTRACT │ ──▶ │ 2. CREATIVE  │ ──▶ │ 3. AI PREFLIGHT │ ──▶ │ 4. LOCK   │ ──▶ │ 5. AUDIT   │
+ │   TRUTH     │     │   STUDIO     │     │   FINDINGS      │     │   SEAL    │     │   TRAIL    │
+ │             │     │              │     │                 │     │           │     │            │
+ │ Brand sets  │     │ Creator      │     │ System scans    │     │ SHA-256   │     │ Immutable  │
+ │ rules once  │     │ uploads      │     │ in &lt;10 seconds  │     │ crypto    │     │ evidence   │
+ │             │     │ assets       │     │ flags issues    │     │ seal      │     │ log        │
+ └─────────────┘     └──────────────┘     └─────────────────┘     └───────────┘     └────────────┘
+    </pre>
+  </div>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 1 of 6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 2 — COMPLETED FEATURES LIST                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <h2>Completed Features — Full Checklist</h2>
+
+  <h3>Stage 1 — Contract Truth (Brand Manager)</h3>
+  <ul class="check-list">
+    <li>Campaign creation modal with name, product, and brand fields</li>
+    <li>Contract builder form: offer %, eligibility, end date, channel, audience</li>
+    <li>Multi-entry approved claims with tag chip input</li>
+    <li>Multi-entry required qualifiers (e.g., "Terms apply")</li>
+    <li>Prohibited terms input (e.g., "guaranteed", "miracle")</li>
+    <li>Channel-specific discount variant overrides (Instagram=20%, VIP Email=30%)</li>
+    <li>Contract versioning — edits create v2, prior approvals auto-invalidated</li>
+  </ul>
+
+  <h3>Stage 2 — Creative Studio (Creator / Agency)</h3>
+  <ul class="check-list">
+    <li>Social copy / caption text input with character counter</li>
+    <li>Drag-and-drop banner image upload with live preview (base64 encode)</li>
+    <li>Technical PDF / spec document text extract editor</li>
+    <li>SHA-256 hash computation of combined asset content on submission</li>
+    <li>"Run Preflight Inspection" with animated multi-stage progress indicator</li>
+    <li>Sample copy fill helper for demo walkthrough</li>
+    <li>Clean blank state for fresh (non-demo) campaigns</li>
+  </ul>
+
+  <h3>Stage 3 — AI Preflight Findings</h3>
+  <ul class="check-list">
+    <li>4-layer status summary: Campaign Facts / Cross-Asset / Brand Rules / Accessibility</li>
+    <li>Color-coded pass ✅ / warning ⚠️ / error 🔴 indicators per layer</li>
+    <li>Individual finding cards: location, issue, evidence, suggested fix, status badge</li>
+    <li>"Accept Suggested Fix" and "Escalate" buttons per contradiction</li>
+    <li>Auto-generated corrective rewrite for text-layer issues</li>
+    <li>Empty-state handling: shows "No Assets Uploaded Yet" if no pack submitted</li>
+  </ul>
+
+  <h3>Stage 4 — Cryptographic Lock & Approval</h3>
+  <ul class="check-list">
+    <li>Revision payload hash display bound to active contract version</li>
+    <li>Unresolved contradictions warning with exception justification notes</li>
+    <li>Approve button executing cryptographic SHA-256 seal</li>
+    <li>Campaign status set to APPROVED & LOCKED</li>
+    <li>Automatic invalidation: any asset edit recalculates hash → resets to INVALIDATED</li>
+    <li>Red warning banner alerts team of unauthorized asset drift</li>
+  </ul>
+
+  <h3>Stage 5 — Audit Trail</h3>
+  <ul class="check-list">
+    <li>Timeline view of every action: contract create, pack submit, check run, finding resolved, approval, invalidation</li>
+    <li>Actor role badges (Brand Manager / Creator / Reviewer)</li>
+    <li>Permanent, immutable audit record per campaign</li>
+    <li>Downloadable compliance certificate with SHA-256 manifest</li>
+  </ul>
+
+  <h3>Platform Features</h3>
+  <ul class="check-list">
+    <li>Campaigns Hub directory: separates Live Campaigns from Demo Benchmark</li>
+    <li>Multi-page workspace with breadcrumbs and back navigation</li>
+    <li>Persona switcher: Brand Manager / Legal Reviewer / Creator in header</li>
+    <li>Responsive design: mobile, tablet, desktop</li>
+    <li>Smooth scroll animations and fade-in transitions</li>
+    <li>WhatsApp/social share preview with OpenGraph meta tags and custom OG image</li>
+    <li>Pre-seeded interactive demo (EcoSip Flash Sale) with 4 real contradictions</li>
+    <li>Executive Dossier PDF downloadable from navbar</li>
+  </ul>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 2 of 6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 3 — PROJECT SCREENSHOTS                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <h2>Project Screenshots — Live Application</h2>
+
+  <div class="screenshot-full">
+    <img src="shots/shot_hub.png" alt="Campaigns Hub">
+    <div class="cap">Campaigns Hub — Directory of live campaigns and demo benchmark with quick metrics</div>
+  </div>
+
+  <div class="screenshot-grid">
+    <div class="screenshot-card">
+      <img src="shots/shot_contract.png" alt="Contract Builder">
+      <div class="cap">Stage 1 — Contract Truth Builder</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="shots/shot_creator.png" alt="Creative Studio">
+      <div class="cap">Stage 2 — Creative Studio Upload</div>
+    </div>
+  </div>
+
+  <div class="screenshot-grid">
+    <div class="screenshot-card">
+      <img src="shots/shot_findings.png" alt="Findings Report">
+      <div class="cap">Stage 3 — AI Preflight Findings</div>
+    </div>
+    <div class="screenshot-card">
+      <img src="shots/shot_lock.png" alt="Cryptographic Lock">
+      <div class="cap">Stage 4 — SHA-256 Cryptographic Seal</div>
+    </div>
+  </div>
+
+  <div class="screenshot-full">
+    <img src="shots/shot_audit.png" alt="Audit Trail">
+    <div class="cap">Stage 5 — Immutable Audit Trail with timestamped action log</div>
+  </div>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 3 of 6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 4 — TECH STACK & IMPLEMENTATION                              -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <h2>Technology & Implementation Details</h2>
+
+  <table>
+    <tr>
+      <th style="width:22%">Layer</th>
+      <th style="width:30%">Technology</th>
+      <th>Implementation Detail</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Framework</span></td>
+      <td>Next.js 14 (App Router) + TypeScript</td>
+      <td>Full-stack in one repo, server components, API routes, Vercel auto-deploy</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Styling</span></td>
+      <td>Tailwind CSS + Custom Design System</td>
+      <td>Editorial theme with 12 custom color tokens, 7 type scale levels, glassmorphism nav</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Database</span></td>
+      <td>Prisma ORM + In-Memory Store</td>
+      <td>7 models (User, Campaign, Contract, Pack, Finding, Approval, AuditLog), zero-setup seeding</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">AI Engine</span></td>
+      <td>Google Gemini 1.5 Pro (Multimodal)</td>
+      <td>Reads banner images natively (no OCR lib), structured JSON output, Zod-validated responses</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Deterministic</span></td>
+      <td>TypeScript Rule Engine</td>
+      <td>Regex discount %, date comparison, prohibited term scan, qualifier presence check</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Security</span></td>
+      <td>SHA-256 Cryptographic Hashing</td>
+      <td>Combined asset hash locks revision; any edit post-approval triggers INVALIDATED status</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Validation</span></td>
+      <td>Zod Schema Validation</td>
+      <td>All API inputs and AI outputs validated before persistence — never trust unvalidated data</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Deploy</span></td>
+      <td>Vercel (Git auto-deploy) + Custom Domain</td>
+      <td>Deployed at cg.kshitijpro.xyz, HTTPS, auto-build on push to main branch</td>
+    </tr>
+  </table>
+
+  <h2>AI Check Pipeline — Dual-Engine Architecture</h2>
+  <div class="flow-box">
+    <pre>
+  Campaign Pack Submitted (caption + banner image + PDF text)
+         │
+         ├──▶ DETERMINISTIC ENGINE (TypeScript — zero AI)
+         │      • Extract numbers → compare to contract offerPercent
+         │      • Parse dates → compare to contract endDate
+         │      • Scan for prohibited terms (string.includes)
+         │      • Verify required qualifiers present
+         │      • Result: PASS / CONTRADICTED per rule
+         │
+         └──▶ GEMINI MULTIMODAL ENGINE (AI — structured JSON)
+                • Input: contract JSON + caption + base64 image + PDF text
+                • Tasks: image text extraction, cross-asset semantic compare, tone check
+                • Output: Finding[] with Zod validation
+                • Fallback: graceful degrade to deterministic-only if API unavailable
+         │
+         └──▶ MERGED FINDINGS → Deduplicated → Saved to DB → Displayed in UI
+    </pre>
+  </div>
+
+  <h2>Security & Anti-Tampering Architecture</h2>
+  <div class="two-col">
+    <div class="col-section">
+      <h3>Cryptographic Integrity</h3>
+      <ul class="check-list">
+        <li>SHA-256 hash of all asset content computed on submission</li>
+        <li>Approval bound to exact hash + contract version</li>
+        <li>Any asset modification recalculates hash → mismatch = INVALIDATED</li>
+        <li>Permanent audit log with actor ID, timestamp, and action detail</li>
+      </ul>
+    </div>
+    <div class="col-section">
+      <h3>AI Safety Measures</h3>
+      <ul class="check-list">
+        <li>All uploaded content wrapped in delimited data blocks (anti-prompt-injection)</li>
+        <li>Hard facts checked deterministically, never delegated to LLM</li>
+        <li>AI failure → SEMANTIC_CHECK_INCOMPLETE, never blocks the pipeline</li>
+        <li>API keys server-side only — zero client-side exposure</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 4 of 6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 5 — CHANGES FROM ROUND 1 + ROUND 3 IMPROVEMENTS             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <h2>Changes from Round 1 Original Plan</h2>
+
+  <div class="change-item">
+    <div class="label">1. Database: Neon PostgreSQL → In-Memory Store with Prisma Schema</div>
+    <p><strong>Why:</strong> Eliminated external DB dependency for zero-setup hackathon evaluation. Judges can open the link instantly without database provisioning. Prisma schema still defines the full relational model for production migration.</p>
+  </div>
+  <div class="change-item">
+    <div class="label">2. Auth: NextAuth.js v5 → Instant Persona Switcher</div>
+    <p><strong>Why:</strong> Removed login friction entirely. Judges switch between Brand Manager / Creator / Reviewer roles with a single header click. No credentials, no sign-up, no session management overhead.</p>
+  </div>
+  <div class="change-item">
+    <div class="label">3. Layout: Multi-Page Routing → Single Dashboard with Tabbed Stages</div>
+    <p><strong>Why:</strong> Consolidating all 5 stages into one workspace with stepper navigation reduced context-switching. Later refined further: separated Campaigns Hub directory from individual stage workspace views with breadcrumbs and back navigation.</p>
+  </div>
+  <div class="change-item">
+    <div class="label">4. Added: Interactive Demo Benchmark (EcoSip Flash Sale)</div>
+    <p><strong>Why:</strong> Pre-seeded a realistic campaign with 4 intentional contradictions so judges can immediately see the full workflow without creating test data. Separated from live blank campaigns to avoid confusion.</p>
+  </div>
+  <div class="change-item">
+    <div class="label">5. Added: OpenGraph Social Preview + Executive Dossier PDF</div>
+    <p><strong>Why:</strong> Sharing the project link on WhatsApp/Twitter now shows a branded preview card. Added a downloadable 6-page executive brief for investor/partner pitch context.</p>
+  </div>
+
+  <hr class="section-divider">
+
+  <h2>Three Major Improvements for Round 3</h2>
+
+  <div class="improvement-card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <span class="badge badge-r3">Round 3</span>
+      <span class="title">1. Multi-Role Access Control with Invite Links</span>
+    </div>
+    <p><strong>Current State:</strong> All users share the same workspace view, switching personas via a header toggle.</p>
+    <p><strong>Round 3 Plan:</strong> Implement real authentication with role-based access control. Brand Managers create campaigns and generate invite links for specific Creators and Reviewers. Each role sees only their permitted stages. Creators cannot access Contract Truth, Reviewers cannot modify Creative Studio assets. This enables real multi-team collaboration with permission boundaries.</p>
+    <p><strong>Technical Approach:</strong> NextAuth.js v5 with credentials + magic link provider, role-based middleware guards on API routes and page components, invite token system with expiry.</p>
+  </div>
+
+  <div class="improvement-card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <span class="badge badge-r3">Round 3</span>
+      <span class="title">2. Visual Asset OCR + Auto-Annotated Change Orders</span>
+    </div>
+    <p><strong>Current State:</strong> System flags text contradictions on poster images and suggests fixes, but the visual asset itself must be manually re-created by the designer.</p>
+    <p><strong>Round 3 Plan:</strong> Use Gemini Vision to extract exact bounding-box coordinates of contradicting text on poster images. Generate an annotated preview image with red highlight boxes pointing to the exact location (e.g., "Change 50% to 30% here"). Auto-create a structured Designer Change Ticket with asset name, location coordinates, required change, and deadline — eliminating back-and-forth emails.</p>
+    <p><strong>Technical Approach:</strong> Gemini 1.5 Pro with spatial understanding, Canvas API overlay rendering, structured change order JSON schema.</p>
+  </div>
+
+  <div class="improvement-card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+      <span class="badge badge-r3">Round 3</span>
+      <span class="title">3. Governance Analytics Dashboard with Trend Intelligence</span>
+    </div>
+    <p><strong>Current State:</strong> Each campaign's findings are isolated — no cross-campaign intelligence or historical trend tracking.</p>
+    <p><strong>Round 3 Plan:</strong> Build a Governance Analytics Dashboard showing: top recurring violation types across all campaigns, creator compliance scores (% of first-submission approvals), time-to-approval trends, and cost-of-error estimates. Enable Brand Managers to identify systemic issues (e.g., "Discount contradictions account for 45% of all flags") and take proactive action like updating contract templates or creator onboarding materials.</p>
+    <p><strong>Technical Approach:</strong> Aggregation queries across Finding model, Chart.js / Recharts visualization, exportable PDF governance report.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 5 of 6</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE 6 — TARGET MARKET, USER ROLES & GTM APPROACH                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header"></div>
+
+  <h2>Target Market & User Roles</h2>
+
+  <table>
+    <tr>
+      <th style="width:25%">Market Segment</th>
+      <th style="width:30%">Decision Maker</th>
+      <th>Pain Point We Solve</th>
+    </tr>
+    <tr>
+      <td><strong>D2C & E-Commerce Brands</strong><br><span style="font-size:9px;color:#646464">$5M–$50M ARR</span></td>
+      <td>Head of Growth / VP Marketing</td>
+      <td>Creators leak unapproved discount codes, contradictory claims slip through manual review before major launches (BFCM, product drops)</td>
+    </tr>
+    <tr>
+      <td><strong>Influencer Marketing Agencies</strong><br><span style="font-size:9px;color:#646464">Managing 20+ clients</span></td>
+      <td>Agency Ops Director / Account Lead</td>
+      <td>Manual proofing of 50+ creator submissions/week takes 15–20 hours; no standardized compliance workflow</td>
+    </tr>
+    <tr>
+      <td><strong>Consumer FinTech & Health/Wellness</strong><br><span style="font-size:9px;color:#646464">Heavily regulated verticals</span></td>
+      <td>General Counsel / Compliance Lead</td>
+      <td>FTC / SEC / ASCI penalty exposure from missing mandatory disclaimers in creator content</td>
+    </tr>
+    <tr>
+      <td><strong>Creator Management Agencies</strong><br><span style="font-size:9px;color:#646464">Talent management firms</span></td>
+      <td>Talent Manager</td>
+      <td>Back-and-forth disputes with brands withholding payouts over alleged contract breaches</td>
+    </tr>
+  </table>
+
+  <h2>Three Product Sides — Role-Based Views</h2>
+  <table>
+    <tr>
+      <th style="width:20%">Product Side</th>
+      <th style="width:25%">Who Uses It</th>
+      <th>What They See & Do</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-pass">Creator Side</span></td>
+      <td>Influencer, Creator, Designer</td>
+      <td>Simple upload box for copy, reels, posters → Instant fix instructions → Green light = get paid</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-new">Manager Side</span></td>
+      <td>Brand Manager, Marketing Lead</td>
+      <td>Overview of all campaigns → 1-Click "Accept All Fixes" or "Send Revision" → "Safe to Publish" go-ahead</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-tech">Reviewer Side</span></td>
+      <td>Legal Counsel, Compliance Officer</td>
+      <td>Upload contracts & set rulebook → Review flagged contradictions → Issue cryptographic audit certificate</td>
+    </tr>
+  </table>
+
+  <h2>Go-To-Market Approach</h2>
+
+  <table>
+    <tr>
+      <th style="width:8%">Step</th>
+      <th style="width:25%">Action</th>
+      <th>Details</th>
+    </tr>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Free Discrepancy Audit</strong></td>
+      <td>Crawl prospect's public ads → run through CampaignGuard → send 1-page "Contradiction Report" to VP Marketing. No one ignores proof that current spend is leaking money.</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Personalized Video Demo</strong></td>
+      <td>Record 60-sec Loom: drop their real brief into CampaignGuard, show AI flagging contradictions in 10 seconds, show auto-generated corrective rewrite.</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Single-Campaign Pilot</strong></td>
+      <td>Offer a $299 one-campaign audit package to build trust with zero long-term commitment. Prove ROI on their actual campaign before upselling.</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td><strong>Agency Flywheel</strong></td>
+      <td>When an agency signs up, they invite 10–50 creators per campaign. Every creator sees CampaignGuard and asks their other brand clients to adopt it → viral loop.</td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td><strong>Regulatory Teardown Content</strong></td>
+      <td>Bi-weekly LinkedIn posts breaking down recent FTC/ASCI fines on major brands. Side-by-side: "What they ran" vs. "How CampaignGuard would have caught it."</td>
+    </tr>
+  </table>
+
+  <div class="spacer"></div>
+
+  <h2>Team</h2>
+  <table>
+    <tr>
+      <th>Member</th>
+      <th>Role</th>
+      <th>Contribution</th>
+    </tr>
+    <tr>
+      <td><strong>Kshitij Adakane</strong></td>
+      <td>Full-Stack Developer & Project Lead</td>
+      <td>Architecture, AI pipeline, contract engine, deployment, and design system</td>
+    </tr>
+  </table>
+
+  <div class="spacer"></div>
+
+  <div style="text-align:center; padding:12px 0;">
+    <p style="font-size:12px; color:#282834; font-weight:600; margin-bottom:4px;">
+      🔗 Live: cg.kshitijpro.xyz &nbsp;|&nbsp; 📦 Repo: github.com/KSHITIJadakane/CAMPAIGN_GUARD
+    </p>
+    <p style="font-size:10px; color:#646464; margin-bottom:0;">
+      CampaignGuard — AI-Powered Pre-Publication Preflight Checker for Marketing Campaigns
+    </p>
+  </div>
+
+  <div class="page-footer">
+    <span>CampaignGuard — Round 2 Submission</span>
+    <span>Page 6 of 6</span>
+  </div>
+</div>
+
+</body>
+</html>
