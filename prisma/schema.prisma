@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   // "BRAND_MANAGER" | "CREATOR" | "REVIEWER"
+  avatar    String?
+  createdAt DateTime @default(now())
+}
+
+model Campaign {
+  id                     String         @id @default(cuid())
+  title                  String
+  product                String
+  brand                  String
+  status                 String         @default("DRAFT") // "DRAFT" | "NEEDS_REVIEW" | "APPROVED" | "INVALIDATED"
+  currentContractVersion Int            @default(1)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  contracts              Contract[]
+  packs                  CampaignPack[]
+  auditLogs              AuditLog[]
+}
+
+model Contract {
+  id                  String   @id @default(cuid())
+  campaignId          String
+  campaign            Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  version             Int      @default(1)
+  market              String   @default("All Markets")
+  channel             String   @default("Instagram")
+  audience            String   @default("General Public")
+  offerPercent        Float    @default(20.0)
+  eligibility         String   @default("Selected items")
+  endDate             String   @default("2026-10-31")
+  approvedClaimsJson  String   @default("[]") // JSON string of string[]
+  requiredQualsJson   String   @default("[]") // JSON string of string[]
+  prohibitedTermsJson String   @default("[]") // JSON string of string[]
+  variantsJson        String   @default("[]") // JSON string of { channel, offerPercent, notes }[]
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+}
+
+model CampaignPack {
+  id           String     @id @default(cuid())
+  campaignId   String
+  campaign     Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  revision     Int        @default(1)
+  packHash     String     // Cryptographic SHA256 of combined assets
+  caption      String
+  bannerBase64 String?    // Base64 encoded banner image (PNG/JPEG)
+  bannerName   String?
+  pdfText      String?    // Extracted PDF text content
+  pdfName      String?
+  status       String     @default("PENDING") // "PENDING" | "CHECKING" | "FINDINGS" | "APPROVED" | "INVALIDATED"
+  createdAt    DateTime   @default(now())
+  findings     Finding[]
+  approvals    Approval[]
+}
+
+model Finding {
+  id           String       @id @default(cuid())
+  packId       String
+  pack         CampaignPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  layer        String       // "FACTS" | "CROSS_ASSET" | "BRAND_RULES" | "ACCESSIBILITY"
+  location     String       // e.g., "Banner (hero_banner.png)", "Caption", "PDF sheet"
+  issue        String
+  evidence     String
+  suggestedFix String
+  status       String       // "CONTRADICTED" | "INSUFFICIENT_EVIDENCE" | "SUPPORTED"
+  resolution   String       @default("PENDING") // "PENDING" | "ACCEPTED" | "ESCALATED"
+  createdAt    DateTime     @default(now())
+}
+
+model Approval {
+  id              String       @id @default(cuid())
+  packId          String
+  pack            CampaignPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  packHash        String       // Locked hash of exact revision
+  contractVersion Int          // Locked contract version
+  reviewerName    String
+  reviewerRole    String
+  notes           String?
+  isValid         Boolean      @default(true)
+  approvedAt      DateTime     @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  actorName  String
+  actorRole  String
+  action     String   // "CONTRACT_CREATED" | "PACK_SUBMITTED" | "CHECK_COMPLETED" | "FINDING_RESOLVED" | "APPROVED" | "INVALIDATED"
+  detail     String
+  createdAt  DateTime @default(now())
+}

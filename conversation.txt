@@ -1,0 +1,307 @@
+1. The Core Idea in Simple Terms
+The Problem: "The Game of Telephone" in Marketing
+When a business launches a product campaign, content is created by multiple people: copywriters write captions, designers build banners, and agencies draft PDF product sheets.   
+PDF
+
+Because everyone works separately, contradictions frequently slip through:   
+PDF
+
+The Instagram caption says 20% off, but the image banner says 30% off.   
+PDF
+
+The PDF product sheet says "keeps drinks cold for up to 12 hours," but the ad claim promises 24 hours guaranteed.   
+PDF
+
+An old logo is used on one banner, or required disclaimers like "On selected items" are forgotten.   
+PDF
+
+Manual review currently relies on people re-reading scattered files and comparing them against chat threads or PDFs. Human reviewers easily miss cross-asset inconsistencies, and approval is usually just a casual "looks good" Slack message with no clear audit trail.   
+PDF
++ 1
+
+[ Traditional Fragmented Workflow ]
+Caption Draft ──┐
+Banner Image  ──┼─> Manual Human Review ─> Missed Contradictions ─> Misleading Ad Published
+PDF Document  ──┘    (Scattered Chat/PDFs)   ("Looks good" on Slack)
+The Solution: CampaignGuard
+CampaignGuard acts like an automated "spell-checker for brand facts and campaign consistency" before anything is published.   
+PDF
+
+It takes a single, human-approved brief (the "source of truth"), scans all campaign assets (captions, images, and PDFs) together, detects contradictions, explains the exact mistake with evidence, and records who approved the corrected version.   
+PDF
++ 1
+
+2. User Roles & The Campaign Contract
+Who Uses CampaignGuard?
+The tool supports three primary roles within small marketing teams and agencies:   
+PDF
+
+Role	What They Need	How CampaignGuard Helps
+Creator (Copywriter / Designer)	
+Fast feedback before submitting; clear, fixable findings. 
+PDF
+
+Preflight report showing exact issue location, evidence, and minimal suggested fixes. 
+PDF
+
+Brand Manager	
+A single place to set rules and ensure variants are intentional. 
+PDF
+
+Defines the Campaign Contract with versioning, rules, and channel/audience variants. 
+PDF
+
+Authorised Reviewer	
+Confidence to approve the exact final version without re-checking everything from scratch. 
+PDF
+
+Receives a review package with revised assets, remaining findings, and source evidence. 
+PDF
+
+The Heart of the System: The "Campaign Contract"
+Instead of letting AI guess what is true by scanning hundreds of messy, old files, a human explicitly confirms a structured brief called a Campaign Contract.   
+PDF
+
+┌────────────────────────────────────────────────────────────────────────┐
+│                          CAMPAIGN CONTRACT                             │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Campaign: EcoSip Weekend Offer                                       │
+│ • Target Market: India | Channel: Instagram                            │
+│ • Offer: 20% off | Eligibility: Selected bottles | End Date: 31 Oct   │
+│ • Approved Claim: "Keeps drinks cold for up to 12 hours."              │
+│ • Required Qualification: "On selected bottles."                       │
+│ • Prohibited Terms: "Miracle", "guaranteed", "world's best"             │
+└────────────────────────────────────────────────────────────────────────┘
+Handling Channel & Audience Variants
+Differences across assets are sometimes intentional:   
+PDF
++ 1
+
+Public Instagram Post: 20% discount.   
+PDF
++ 1
+
+VIP Email Subscribers: 30% loyalty discount.   
+PDF
+
+CampaignGuard avoids false alarms by letting managers define channel-specific variants within the Campaign Contract. An email offering 30% off is approved if designated for VIPs, but an Instagram banner claiming 30% off will trigger an error because it conflicts with the Instagram variant.   
+PDF
++ 2
+
+3. How CampaignGuard Works (The Preflight Workflow)
+When a creator submits a campaign pack (a caption, banners, and a PDF), CampaignGuard runs a 6-step preflight review:   
+PDF
+
+┌─────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│ 1. Define   │ ──> │ 2. Submit        │ ──> │ 3. Automated     │ ──> │ 4. Fix          │
+│    Contract │     │    Campaign Pack │     │    4-Layer Check │     │    Findings     │
+└─────────────┘     └──────────────────┘     └──────────────────┘     └─────────────────┘
+                                                                               │
+                                             ┌──────────────────┐              │
+                                             │ 5. Review &      │ <────────────┘
+                                             │    Version Lock  │
+                                             └──────────────────┘
+The 4 Checking Layers
+During preflight inspection, the system processes content across four layers:   
+PDF
+
+Campaign Facts: Verifies that numerical offers, discount percentages, expiration dates, eligibility requirements, and product claims match the contract.   
+PDF
+
+Cross-Asset Consistency: Compares the caption, image text, and PDF document against each other to catch internal disagreements.   
+PDF
+
+Brand Rules: Flags prohibited terminology, missing required disclosures, tone deviations, and outdated logos.   
+PDF
+
+Accessibility Checks: Performs basic checks such as visual contrast levels on banners and image alt-text presence.   
+PDF
+
+Structure of a Finding
+When an issue is caught, CampaignGuard does not issue vague warnings. It returns a structured finding:   
+PDF
++ 1
+
+Location: Banner image (hero_banner.png).   
+PDF
+
+Issue: Conflicts with approved discount.   
+PDF
+
+Evidence: Campaign Contract v2 specifies 20%, but image OCR extracted 30%.   
+PDF
++ 1
+
+Suggested Action: Replace "30%" with "20%".   
+PDF
+
+Factual Status: Classified as Supported, Contradicted, or Insufficient Evidence.   
+PDF
+
+4. Deep Technical & Engineering Architecture
+Below is the technical implementation breakdown, data pipeline, and system architecture.
+
+                              ┌─────────────────────────────────────────┐
+                              │           React / Next.js Web UI        │
+                              └────────────────────┬────────────────────┘
+                                                   │ HTTPS / REST
+                                                   ▼
+                              ┌─────────────────────────────────────────┐
+                              │             FastAPI Backend             │
+                              └──────┬───────────────────────────┬──────┘
+                                     │                           │
+                   ┌─────────────────┴────────┐         ┌────────┴────────────────┐
+                   ▼                          ▼         ▼                         ▼
+        ┌──────────────────┐        ┌──────────────┐ ┌──────┐          ┌──────────────┐
+        │ Extraction Engine│        │ PostgreSQL DB│ │ File │          │ Rule Engine  │
+        │ - Tesseract/OCR  │        │ - Contracts  │ │ Object          │ - Structured │
+        │ - PyPDF / Text   │        │ - Revisions  │ │ Storage         │   SQL Match  │
+        └──────────────────┘        │ - Audit Logs │ └──────┘          │ - LLM Adapter│
+                                    └──────────────┘                   └──────────────┘
+Technical Stack Summary
+Component	Technology / Library	Purpose
+Frontend	React / Next.js	
+Web interface for submission, review, and issue highlighting. 
+PDF
+
+Backend	FastAPI + Pydantic	
+Asynchronous REST API, data validation, and execution orchestration. 
+PDF
+
+Database	PostgreSQL	
+Relational storage for structured facts, versions, and audit logs. 
+PDF
++ 1
+
+File Storage	Private Object Storage	
+Secure storage for asset images, PDFs, and export packages. 
+PDF
+
+Text Extraction	OCR & PDF Libraries	
+Text extraction from PNG/JPEG banners and PDF documents. 
+PDF
+
+AI Integration	LLM Adapter with Pydantic	
+Structured output generation for qualitative semantic & tone evaluation. 
+PDF
+
+Core Architectural Principle: Deterministic Facts vs. Bounded AI
+A key design choice in CampaignGuard is the separation between Deterministic Exact Matches and Bounded AI Interpretations:   
+PDF
+
+                             Incoming Check Request
+                                       │
+                   ┌───────────────────┴───────────────────┐
+                   ▼                                       ▼
+       [ Exact Structured Facts ]              [ Qualitative Content ]
+    (Discounts, Expiry, SKUs, Dates)            (Tone, Messaging, Ambiguity)
+                   │                                       │
+                   ▼                                       ▼
+       SQL Relational Lookup                    LLM Adapter Engine
+   (100% Deterministic & Exact)              (Pydantic Structured Output)
+Deterministic Lookups for Hard Facts: Dates, numerical discounts, product names, and eligibility criteria are stored as structured fields in PostgreSQL. They are checked using relational database lookups and exact string/numerical matching—never routed through vector embeddings or RAG semantic search, avoiding hallucinated facts.   
+PDF
++ 1
+
+Bounded AI for Qualitative Interpretation: The LLM is restricted to tasks requiring human-like comprehension: analyzing brand tone, evaluating claim semantics, and verifying nuanced text relationships. The LLM returns structured JSON enforced by Pydantic schemas.   
+PDF
++ 2
+
+End-to-End Data Processing Pipeline
+1. Asset Upload
+   ├── Banners (PNG/JPEG) ────> OCR Processing Engine ──────────┐
+   ├── PDF Documents ─────────> Text Extraction Library ────────┼──> Raw Extracted Text
+   └── Social Captions ───────> Direct String Ingestion ────────┘
+                                                                       │
+2. Rule Execution Engine                                               │
+   ├── Step A: Parse Campaign Contract JSON Schema from DB             │
+   ├── Step B: Run Exact SQL/Regex Engine against Extracted Text <─────┘
+   └── Step C: Pass Unmatched/Qualitative Text to LLM Adapter
+                               │
+3. Finding Generation & Output │
+   └── Map Findings to File Location + Issue + Source Evidence
+Version-Bound Approval Security Mechanics
+To prevent unauthorized changes after approval, CampaignGuard enforces a version-bound lock:   
+PDF
++ 1
+
+  [ Campaign Contract v1 ] ──+── [ Asset Pack Rev 1.0 ] ──> Approved Status [Lock Hash: A7X9]
+                                │
+                        User edits caption text
+                                │
+                                ▼
+                       [ Asset Pack Rev 1.1 ] ──> APPROVAL INVALIDATED ──> Triggers Re-Review
+Cryptographic/Version Binding: Approval status is bound to the hash of the exact asset revision (Rev 1.0) and the active contract version (v1).   
+PDF
++ 1
+
+Automatic Invalidation: Modifying any asset text, swapping an image, or updating the contract automatically resets the campaign status to Draft / Needs Re-Review.   
+PDF
++ 1
+
+Audit Trail: Every approval stores a permanent review record containing:
+
+Approved content revision IDs.   
+PDF
+
+Contract and rule versions used.   
+PDF
+
+Completed vs. incomplete checks.   
+PDF
+
+Reviewer identity, timestamp, and exception override reasons.   
+PDF
+
+Security, Safety & Failure Modes
+Prompt Injection Defenses: Uploaded PDFs, captions, and extracted OCR text are treated strictly as untrusted data payloads. They are injected into model prompts inside isolated data blocks, preventing malicious inputs from hijacking system instructions.   
+PDF
++ 1
+
+Explicit Failure State Handling:
+
+Unreadable OCR / Blurry Text: System returns OCR_FAILED 
+→ flags asset for manual human review.   
+PDF
+
+Model Service Unavailable: System returns SEMANTIC_CHECK_INCOMPLETE 
+→ blocks final approval until resolved.   
+PDF
+
+Missing Evidence: System marks claim state as INSUFFICIENT_EVIDENCE 
+→ prevents the AI from fabricating missing facts.   
+PDF
++ 1
+
+5. System Comparison Summary
+Metric / Dimension	Traditional Review Process	CampaignGuard Review Workflow
+Source of Truth	
+Scattered PDFs, chat messages, and spreadsheets. 
+PDF
+
+Structured, version-controlled Campaign Contract. 
+PDF
+
+Cross-Asset Verification	
+Manual side-by-side reading; prone to missed details. 
+PDF
+
+Automated cross-matching (Caption vs. Image OCR vs. PDF). 
+PDF
+
+Channel Customization	Often falsely flagged or incorrectly mixed up.	
+Supports distinct, rule-approved variants per channel/audience. 
+PDF
++ 1
+
+Fact Engine	Unstructured human memory.	
+SQL-driven deterministic lookups for dates and numeric facts. 
+PDF
+
+Approval Tracking	
+Casual message ("looks good") without revision tracking. 
+PDF
+
+Cryptographically tied to specific revision IDs; invalidated on edit. 
+PDF
++ 1
