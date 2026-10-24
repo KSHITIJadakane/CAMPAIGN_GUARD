@@ -24,6 +24,30 @@ body {
   font-family: var(--font-sans), Inter, system-ui, -apple-system, sans-serif;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(65, 161, 207, 0.07) 0px, transparent 40%),
+    radial-gradient(at 90% 15%, rgba(40, 40, 52, 0.05) 0px, transparent 45%),
+    radial-gradient(at 50% 80%, rgba(65, 161, 207, 0.05) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism and glow utility classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -8px rgba(40, 40, 52, 0.12);
 }
 
 /* Custom scrollbars matching the hairline border aesthetic */
