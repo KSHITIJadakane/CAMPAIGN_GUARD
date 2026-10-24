@@ -7,9 +7,10 @@ import { useRole } from "@/components/layout/RoleContext";
 interface PackUploaderProps {
   campaign: any;
   onInspectionComplete: () => void;
+  onViewFindings?: () => void;
 }
 
-export function PackUploader({ campaign, onInspectionComplete }: PackUploaderProps) {
+export function PackUploader({ campaign, onInspectionComplete, onViewFindings }: PackUploaderProps) {
   const { currentUser } = useRole();
   const latestPack = campaign.packs?.[0];
 
@@ -26,6 +27,7 @@ export function PackUploader({ campaign, onInspectionComplete }: PackUploaderPro
 
   const [isInspecting, setIsInspecting] = useState(false);
   const [inspectionStage, setInspectionStage] = useState("");
+  const [inspectionSuccess, setInspectionSuccess] = useState<any | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,6 +74,11 @@ export function PackUploader({ campaign, onInspectionComplete }: PackUploaderPro
 
       const data = await res.json();
       if (data.success) {
+        setInspectionSuccess({
+          revision: data.pack?.revision || (latestPack?.revision || 0) + 1,
+          hash: data.pack?.packHash ? data.pack.packHash.slice(0, 12) : "computed",
+          findingsCount: data.findings?.length ?? data.pack?.findings?.length ?? 0,
+        });
         onInspectionComplete();
       } else {
         alert(data.error || "Inspection failed");
@@ -98,6 +105,27 @@ export function PackUploader({ campaign, onInspectionComplete }: PackUploaderPro
           Submit promotional copy, banner images, and specification sheets. Any edit recalculates the cryptographic revision hash and re-verifies campaign truth.
         </p>
       </div>
+
+      {/* Preflight Completion Banner with Direct Navigation Button */}
+      {inspectionSuccess && (
+        <div className="p-4 bg-status-pass-bg border border-status-pass-border text-status-pass rounded-xl text-[13px] flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-status-pass" />
+            <span>
+              Preflight Inspection Complete: Pack Rev {inspectionSuccess.revision} locked (Hash: {inspectionSuccess.hash}...). {inspectionSuccess.findingsCount} findings flagged.
+            </span>
+          </div>
+          {onViewFindings && (
+            <button
+              onClick={onViewFindings}
+              className="px-3.5 py-1.5 rounded-lg bg-status-pass text-paper hover:opacity-90 font-medium text-xs font-sans flex items-center gap-1.5 cursor-pointer shrink-0 shadow-sm"
+            >
+              <span>View Findings ({inspectionSuccess.findingsCount})</span>
+              <Sparkles className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Caption Editor */}
       <div className="space-y-2">
@@ -187,7 +215,7 @@ export function PackUploader({ campaign, onInspectionComplete }: PackUploaderPro
         <button
           onClick={handleRunInspection}
           disabled={isInspecting}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-all text-[14px] font-medium flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-all text-[14px] font-medium flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
         >
           <Sparkles className="w-4 h-4" />
           {isInspecting ? "Inspecting 4 Layers..." : "Run Preflight Inspection"}

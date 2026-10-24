@@ -55,6 +55,36 @@ export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
     }
   };
 
+  const handleSimulateTamper = async () => {
+    if (!latestPack) return;
+    setLoading(true);
+    setSuccessMsg("");
+    try {
+      const res = await fetch("/api/packs/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignId: campaign.id,
+          caption: "Tampered copy: Claiming 35% off on all items! (Unauthorized post-approval edit)",
+          bannerBase64: latestPack.bannerBase64,
+          bannerName: latestPack.bannerName,
+          pdfText: latestPack.pdfText,
+          actorName: "External Asset Modifier",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg("Out-of-band edit detected! Cryptographic lock was INSTANTLY REVOKED & INVALIDATED.");
+        onApproved();
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error simulating asset change");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-paper rounded-2xl border border-mist p-6 space-y-6">
       <div className="border-b border-mist pb-4 flex items-center justify-between">
@@ -164,19 +194,37 @@ export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
         </span>
 
         {isApproved ? (
-          <div className="flex items-center gap-2 text-status-pass font-mono text-[13px] font-medium">
-            <CheckCircle2 className="w-4 h-4" />
-            Approved & Version-Locked (Rev {latestPack?.revision})
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-status-pass font-mono text-[13px] font-medium bg-status-pass-bg px-3 py-1.5 rounded-lg border border-status-pass-border">
+              <CheckCircle2 className="w-4 h-4 text-status-pass" />
+              <span>Approved & Version-Locked (Rev {latestPack?.revision})</span>
+            </div>
+            <button
+              onClick={handleSimulateTamper}
+              disabled={loading}
+              className="px-3.5 py-1.5 rounded-lg border border-status-error text-status-error hover:bg-status-error-bg text-xs font-mono font-medium transition-colors cursor-pointer active:scale-95 shadow-xs flex items-center gap-1.5"
+              title="Test the instant revocation protocol by simulating an out-of-band asset edit"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>{loading ? "Revoking..." : "Simulate Asset Tamper (Test Revocation)"}</span>
+            </button>
           </div>
         ) : (
-          <button
-            onClick={handleApprove}
-            disabled={loading || !latestPack}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[14px] font-medium flex items-center justify-center gap-2 shadow-sm"
-          >
-            <Lock className="w-4 h-4 text-signal-blue" />
-            {loading ? "Locking Revision..." : "Execute Cryptographic Approval"}
-          </button>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+            {!latestPack && (
+              <span className="text-[11px] font-mono text-status-warn">
+                Submit an asset revision in Creator tab first
+              </span>
+            )}
+            <button
+              onClick={handleApprove}
+              disabled={loading || !latestPack}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[14px] font-medium flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lock className={`w-4 h-4 text-signal-blue ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Locking Revision..." : "Execute Cryptographic Approval"}
+            </button>
+          </div>
         )}
       </div>
     </div>

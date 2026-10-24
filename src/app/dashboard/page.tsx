@@ -10,9 +10,10 @@ import { ApprovalPanel } from "@/components/approval/ApprovalPanel";
 import { AuditTimeline } from "@/components/campaign/AuditTimeline";
 import { useRole } from "@/components/layout/RoleContext";
 import { StatusBadge } from "@/components/campaign/StatusBadge";
+import { Role } from "@/types";
 
 export default function DashboardPage() {
-  const { currentRole, currentUser } = useRole();
+  const { currentRole, currentUser, setRole } = useRole();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<"findings" | "creator" | "contract" | "approval" | "audit">("findings");
@@ -81,7 +82,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Banner & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-mist pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-mist pb-6">
         <div>
           <span className="text-[11px] font-mono uppercase tracking-widest text-ash">
             Preflight Review Console
@@ -92,17 +93,47 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Quick Persona Switcher */}
+          <div className="flex items-center gap-1 p-1 bg-paper border border-mist rounded-xl text-xs font-mono shadow-xs">
+            <span className="text-ash px-2 hidden lg:inline">Role:</span>
+            {(["BRAND_MANAGER", "CREATOR", "REVIEWER"] as Role[]).map((r) => {
+              const isActive = currentRole === r;
+              return (
+                <button
+                  key={r}
+                  onClick={() => {
+                    setRole(r);
+                    if (r === "CREATOR") setActiveTab("creator");
+                    else if (r === "REVIEWER") setActiveTab("approval");
+                    else setActiveTab("contract");
+                  }}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium text-[11px] ${
+                    isActive
+                      ? "bg-twilight text-paper shadow-sm"
+                      : "text-charcoal hover:text-ink hover:bg-linen"
+                  }`}
+                  title={`Switch to ${r.replace("_", " ")}`}
+                >
+                  {r === "BRAND_MANAGER" ? "Brand" : r === "CREATOR" ? "Creator" : "Reviewer"}
+                </button>
+              );
+            })}
+          </div>
+
           <button
-            onClick={fetchCampaigns}
-            className="p-2.5 rounded-lg border border-mist text-charcoal hover:bg-paper transition-colors"
+            onClick={() => {
+              setLoading(true);
+              fetchCampaigns();
+            }}
+            className="p-2.5 rounded-lg border border-mist text-charcoal hover:bg-paper transition-colors cursor-pointer active:scale-95"
             title="Refresh database state"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-signal-blue" : ""}`} />
           </button>
           <button
             onClick={() => setIsCreating(true)}
-            className="px-4 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[13px] font-medium flex items-center gap-2 shadow-sm"
+            className="px-4 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[13px] font-medium flex items-center gap-2 shadow-sm cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             New Campaign
@@ -231,7 +262,7 @@ export default function DashboardPage() {
               <div className="flex border-b border-mist overflow-x-auto gap-2">
                 <button
                   onClick={() => setActiveTab("findings")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                     activeTab === "findings"
                       ? "border-twilight text-ink font-semibold"
                       : "border-transparent text-charcoal hover:text-ink"
@@ -248,7 +279,7 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setActiveTab("creator")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                     activeTab === "creator"
                       ? "border-twilight text-ink font-semibold"
                       : "border-transparent text-charcoal hover:text-ink"
@@ -260,7 +291,7 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setActiveTab("contract")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                     activeTab === "contract"
                       ? "border-twilight text-ink font-semibold"
                       : "border-transparent text-charcoal hover:text-ink"
@@ -272,7 +303,7 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setActiveTab("approval")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                     activeTab === "approval"
                       ? "border-twilight text-ink font-semibold"
                       : "border-transparent text-charcoal hover:text-ink"
@@ -284,7 +315,7 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setActiveTab("audit")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 ${
+                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
                     activeTab === "audit"
                       ? "border-twilight text-ink font-semibold"
                       : "border-transparent text-charcoal hover:text-ink"
@@ -302,7 +333,11 @@ export default function DashboardPage() {
                 )}
 
                 {activeTab === "creator" && (
-                  <PackUploader campaign={selectedCampaign} onInspectionComplete={fetchCampaigns} />
+                  <PackUploader 
+                    campaign={selectedCampaign} 
+                    onInspectionComplete={fetchCampaigns} 
+                    onViewFindings={() => setActiveTab("findings")} 
+                  />
                 )}
 
                 {activeTab === "contract" && (

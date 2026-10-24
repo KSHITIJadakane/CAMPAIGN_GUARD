@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   ArrowRight, 
   ShieldCheck, 
@@ -22,6 +23,7 @@ import { IntroPreloader } from "@/components/landing/IntroPreloader";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 export default function HomePage() {
+  const router = useRouter();
   const { currentRole, setRole } = useRole();
   const [pageReady, setPageReady] = useState(false);
 
@@ -34,6 +36,7 @@ export default function HomePage() {
 
   const handleSelectRoleAndGo = (role: Role) => {
     setRole(role);
+    router.push("/dashboard");
   };
 
   const handleReplayIntro = () => {
@@ -166,8 +169,16 @@ export default function HomePage() {
               return (
                 <ScrollReveal key={role} direction="up" delayMs={idx * 120} className="h-full">
                   <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleSelectRoleAndGo(role)}
-                    className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between h-full group ${
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSelectRoleAndGo(role);
+                      }
+                    }}
+                    className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between h-full group active:scale-[0.98] ${
                       isCurrent
                         ? "bg-paper border-twilight shadow-glow-card ring-2 ring-twilight/20 -translate-y-1"
                         : "bg-paper/70 border-mist hover:border-twilight/50 hover:bg-paper hover:-translate-y-1 hover:shadow-md"

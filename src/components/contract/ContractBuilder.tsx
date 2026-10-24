@@ -223,12 +223,18 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
             placeholder="Add new approved claim e.g. Keeps drinks cold for up to 12 hours"
             value={newClaim}
             onChange={(e) => setNewClaim(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddClaim();
+              }
+            }}
             className="flex-1 bg-linen border-b border-mist focus:border-twilight px-3 py-1.5 text-[13px] text-ink outline-none"
           />
           <button
             type="button"
             onClick={handleAddClaim}
-            className="px-3 py-1 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors"
+            className="px-3.5 py-1.5 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors cursor-pointer active:scale-95 shadow-xs"
           >
             Add Claim
           </button>
@@ -247,7 +253,8 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
               <button
                 type="button"
                 onClick={() => setProhibitedTerms(prohibitedTerms.filter((_, i) => i !== idx))}
-                className="hover:opacity-70"
+                className="hover:opacity-70 p-0.5 cursor-pointer"
+                title="Remove forbidden term"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -260,12 +267,18 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
             placeholder="Add forbidden word e.g. Miracle, guaranteed, world's best"
             value={newProhibited}
             onChange={(e) => setNewProhibited(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddProhibited();
+              }
+            }}
             className="flex-1 bg-linen border-b border-mist focus:border-twilight px-3 py-1.5 text-[13px] text-ink outline-none"
           />
           <button
             type="button"
             onClick={handleAddProhibited}
-            className="px-3 py-1 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors"
+            className="px-3.5 py-1.5 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors cursor-pointer active:scale-95 shadow-xs"
           >
             Add Prohibited Term
           </button>
@@ -284,7 +297,8 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
               <button
                 type="button"
                 onClick={() => setRequiredQuals(requiredQuals.filter((_, i) => i !== idx))}
-                className="text-ash hover:text-status-error"
+                className="text-ash hover:text-status-error p-0.5 cursor-pointer"
+                title="Remove disclaimer"
               >
                 <Trash2 className="w-3 h-3" />
               </button>
@@ -297,12 +311,18 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
             placeholder="Add required disclaimer e.g. On selected bottles."
             value={newQual}
             onChange={(e) => setNewQual(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddQual();
+              }
+            }}
             className="flex-1 bg-linen border-b border-mist focus:border-twilight px-3 py-1.5 text-[13px] text-ink outline-none"
           />
           <button
             type="button"
             onClick={handleAddQual}
-            className="px-3 py-1 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors"
+            className="px-3.5 py-1.5 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors cursor-pointer active:scale-95 shadow-xs"
           >
             Add Required Disclaimer
           </button>
@@ -330,7 +350,8 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
                 <button
                   type="button"
                   onClick={() => setVariants(variants.filter((_, idx) => idx !== i))}
-                  className="text-ash hover:text-status-error"
+                  className="text-ash hover:text-status-error p-1 cursor-pointer"
+                  title="Remove variant"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -359,12 +380,18 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
             placeholder="Audience / Reason"
             value={variantNotes}
             onChange={(e) => setVariantNotes(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddVariant();
+              }
+            }}
             className="bg-linen border-b border-mist px-3 py-1.5 text-[13px] text-ink outline-none"
           />
           <button
             type="button"
             onClick={handleAddVariant}
-            className="px-3 py-1.5 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors"
+            className="px-3 py-1.5 text-[13px] font-medium border border-twilight rounded-lg text-twilight hover:bg-twilight hover:text-paper transition-colors cursor-pointer active:scale-95 shadow-xs"
           >
             Add Variant Rule
           </button>
@@ -379,9 +406,9 @@ export function ContractBuilder({ campaign, onSaved }: ContractBuilderProps) {
         <button
           onClick={handleSaveContract}
           disabled={loading}
-          className="px-5 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[14px] font-medium flex items-center gap-2 shadow-sm"
+          className="px-5 py-2.5 rounded-lg border border-twilight text-paper bg-dusk hover:bg-twilight transition-colors text-[14px] font-medium flex items-center gap-2 shadow-sm cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Save className="w-4 h-4" />
+          <Save className={`w-4 h-4 ${loading ? "animate-spin text-signal-blue" : ""}`} />
           {loading ? "Publishing Truth Contract..." : `Publish Contract v${(activeContract?.version || 1) + 1}`}
         </button>
       </div>

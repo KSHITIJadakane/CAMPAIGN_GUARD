@@ -246,7 +246,7 @@ export function InteractivePreflightDemo() {
               <button
                 key={key}
                 onClick={() => handleSwitchScenario(key)}
-                className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-center ${
+                className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-1.5 text-center cursor-pointer active:scale-95 ${
                   isActive
                     ? "bg-twilight text-paper shadow-sm scale-100 font-semibold"
                     : "text-charcoal hover:text-ink hover:bg-linen"
@@ -308,7 +308,7 @@ export function InteractivePreflightDemo() {
             <button
               onClick={handleRunAudit}
               disabled={isAuditing}
-              className="w-full py-2.5 px-4 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full py-2.5 px-4 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {isAuditing ? (
                 <>
@@ -326,10 +326,21 @@ export function InteractivePreflightDemo() {
             {hasErrors && !isFixed && (
               <button
                 onClick={handleAutoFix}
-                className="w-full py-2 px-3 rounded-xl border border-status-pass text-status-pass hover:bg-status-pass-bg transition-colors text-xs font-mono font-medium flex items-center justify-center gap-1.5"
+                className="w-full py-2 px-3 rounded-xl border border-status-pass text-status-pass hover:bg-status-pass-bg transition-colors text-xs font-mono font-medium flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-xs"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Auto-Fix Identified Violations</span>
+              </button>
+            )}
+
+            {isFixed && (
+              <button
+                onClick={() => handleSwitchScenario(activeScenario)}
+                className="w-full py-2 px-3 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal hover:text-ink transition-colors text-xs font-mono font-medium flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-xs"
+                title="Reset this scenario back to its initial contradiction state"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-ash" />
+                <span>Reset to Original Contradictions</span>
               </button>
             )}
           </div>

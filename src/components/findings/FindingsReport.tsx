@@ -26,6 +26,7 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
   const findings: FindingItem[] = latestPack?.findings || [];
 
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [isBatchResolving, setIsBatchResolving] = useState(false);
 
   // Group counts by layer
   const layers: CheckLayer[] = ["FACTS", "CROSS_ASSET", "BRAND_RULES", "ACCESSIBILITY"];
@@ -36,7 +37,7 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
     ACCESSIBILITY: { title: "Accessibility", subtitle: "Visual contrast & alt-text" },
   };
 
-  const handleResolve = async (findingId: string, resolution: "ACCEPTED" | "ESCALATED") => {
+  const handleResolve = async (findingId: string, resolution: "ACCEPTED" | "ESCALATED" | "PENDING") => {
     setResolvingId(findingId);
     try {
       const res = await fetch("/api/findings/resolve", {
@@ -57,6 +58,31 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
       console.error(e);
     } finally {
       setResolvingId(null);
+    }
+  };
+
+  const handleResolveAll = async () => {
+    const pending = findings.filter((f) => f.resolution === "PENDING");
+    if (pending.length === 0) return;
+    setIsBatchResolving(true);
+    try {
+      for (const f of pending) {
+        await fetch("/api/findings/resolve", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            findingId: f.id,
+            resolution: "ACCEPTED",
+            actorName: currentUser.name,
+            actorRole: currentUser.role,
+          }),
+        });
+      }
+      onRefresh();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsBatchResolving(false);
     }
   };
 
@@ -108,13 +134,26 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
 
       {/* Findings List Section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-serif text-xl text-ink font-normal">
-            Preflight Inspection Findings ({findings.length})
-          </h3>
-          <span className="text-[12px] font-mono text-ash">
-            Rev {latestPack?.revision || 1} • SHA256: [{latestPack?.packHash ? latestPack.packHash.slice(0, 8) : "none"}]
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="font-serif text-xl text-ink font-normal">
+              Preflight Inspection Findings ({findings.length})
+            </h3>
+            <span className="text-[12px] font-mono text-ash">
+              Rev {latestPack?.revision || 1} • SHA256: [{latestPack?.packHash ? latestPack.packHash.slice(0, 8) : "none"}]
+            </span>
+          </div>
+
+          {findings.some((f: any) => f.resolution === "PENDING") && (
+            <button
+              onClick={handleResolveAll}
+              disabled={isBatchResolving}
+              className="px-4 py-2 rounded-xl bg-signal-blue hover:bg-cerulean text-paper text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              <Check className={`w-3.5 h-3.5 ${isBatchResolving ? "animate-spin" : ""}`} />
+              <span>{isBatchResolving ? "Accepting All..." : "Accept All Suggested Fixes"}</span>
+            </button>
+          )}
         </div>
 
         {findings.length === 0 ? (
@@ -198,22 +237,33 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
                   </div>
 
                   {/* Action Buttons */}
-                  {!isResolved && (
+                  {!isResolved ? (
                     <div className="mt-4 pt-3 border-t border-mist/80 flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleResolve(finding.id, "ESCALATED")}
                         disabled={resolvingId === finding.id}
-                        className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-twilight text-twilight hover:bg-linen transition-colors"
+                        className="text-[12px] font-medium px-3.5 py-1.5 rounded-lg border border-twilight text-twilight hover:bg-linen transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
                       >
-                        Escalate
+                        {resolvingId === finding.id ? "Updating..." : "Escalate"}
                       </button>
                       <button
                         onClick={() => handleResolve(finding.id, "ACCEPTED")}
                         disabled={resolvingId === finding.id}
-                        className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-colors flex items-center gap-1"
+                        className="text-[12px] font-medium px-3.5 py-1.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
                       >
-                        <Check className="w-3.5 h-3.5" />
-                        Accept Suggested Fix
+                        <Check className={`w-3.5 h-3.5 ${resolvingId === finding.id ? "animate-spin" : ""}`} />
+                        <span>{resolvingId === finding.id ? "Resolving..." : "Accept Suggested Fix"}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-3 pt-2 border-t border-mist/50 flex items-center justify-end">
+                      <button
+                        onClick={() => handleResolve(finding.id, "PENDING")}
+                        disabled={resolvingId === finding.id}
+                        className="text-[11px] font-mono text-ash hover:text-ink underline transition-colors cursor-pointer"
+                        title="Re-open this finding for review"
+                      >
+                        Re-open finding
                       </button>
                     </div>
                   )}
