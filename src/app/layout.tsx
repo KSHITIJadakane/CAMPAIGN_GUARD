@@ -50,19 +50,36 @@ export const metadata: Metadata = {
     canonical: "https://cg.kshitijpro.xyz",
   },
   openGraph: {
-    title: "CampaignGuard — Automated Preflight Governance for Marketing Campaigns",
+    title: "CampaignGuard — Automated Preflight Governance",
     description:
-      "When marketing teams launch cross-channel campaigns, captions claim 20% off while banner graphics announce 30%. CampaignGuard establishes a single human truth contract and reconciles assets across 4 automated inspection layers.",
+      "The automated spell-checker for brand facts, cross-asset consistency, and cryptographic version-locked approvals. Stop embarrassing campaign typos and discount contradictions before you launch.",
     url: "https://cg.kshitijpro.xyz",
     siteName: "CampaignGuard",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "https://cg.kshitijpro.xyz/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "CampaignGuard — Automated Preflight Governance",
+        type: "image/png",
+      },
+      {
+        url: "https://cg.kshitijpro.xyz/og-square.png",
+        width: 600,
+        height: 600,
+        alt: "CampaignGuard Emblem",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "CampaignGuard — Automated Preflight Governance",
     description:
       "The automated spell-checker for brand facts, cross-asset consistency, and cryptographic version-locked approvals.",
+    images: ["https://cg.kshitijpro.xyz/og-image.png"],
     creator: "@CampaignGuard",
   },
   icons: {
@@ -97,6 +114,22 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-icon.svg" type="image/svg+xml" />
+        
+        {/* WhatsApp & Social Media Direct Preview Tags */}
+        <meta property="og:title" content="CampaignGuard — Automated Preflight Governance" />
+        <meta
+          property="og:description"
+          content="The automated spell-checker for brand facts, cross-asset consistency, and cryptographic version-locked approvals. Catch discrepancies before you launch."
+        />
+        <meta property="og:image" content="https://cg.kshitijpro.xyz/og-image.png" />
+        <meta property="og:image:secure_url" content="https://cg.kshitijpro.xyz/og-image.png" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="CampaignGuard Automated Preflight Protocol" />
+        <meta property="og:url" content="https://cg.kshitijpro.xyz" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="CampaignGuard" />
       </head>
       <body className="min-h-screen bg-parchment text-ink flex flex-col selection:bg-signal-blue/20">
         <RoleProvider>
