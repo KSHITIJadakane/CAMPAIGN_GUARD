@@ -18,12 +18,15 @@ import { useRole } from "@/components/layout/RoleContext";
 interface FindingsReportProps {
   campaign: any;
   onRefresh: () => void;
+  onGoToApproval?: () => void;
 }
 
-export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
+export function FindingsReport({ campaign, onRefresh, onGoToApproval }: FindingsReportProps) {
   const { currentUser } = useRole();
   const latestPack = campaign.packs?.[0];
   const findings: FindingItem[] = latestPack?.findings || [];
+  const pendingFindings = findings.filter((f) => f.resolution === "PENDING");
+  const allResolved = findings.length > 0 && pendingFindings.length === 0;
 
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [isBatchResolving, setIsBatchResolving] = useState(false);
@@ -88,13 +91,41 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
 
   return (
     <div className="space-y-6">
+      {/* All Fixes Accepted Banner */}
+      {allResolved && (
+        <div className="p-4 sm:p-5 bg-status-pass-bg border border-status-pass-border rounded-2xl text-status-pass flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-status-pass/20 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-status-pass" />
+            </div>
+            <div>
+              <h4 className="font-serif text-lg text-ink font-normal">
+                All Contradictions Reconciled & Accepted
+              </h4>
+              <p className="text-xs text-charcoal font-sans mt-0.5">
+                Every preflight issue has been addressed. The creative pack now harmonizes with Contract v{campaign.contracts?.[0]?.version || 1} truth.
+              </p>
+            </div>
+          </div>
+          {onGoToApproval && (
+            <button
+              onClick={onGoToApproval}
+              className="px-4 py-2.5 rounded-xl bg-twilight text-paper hover:bg-ink text-xs font-mono font-medium transition-all shadow-sm flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+            >
+              <span>Proceed to Gatekeeper Lock →</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* 4-Layer Inspection Summary Header */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {layers.map((layer) => {
           const layerFindings = findings.filter((f) => f.layer === layer);
-          const hasError = layerFindings.some((f) => f.status === "CONTRADICTED");
-          const hasWarning = layerFindings.some((f) => f.status === "INSUFFICIENT_EVIDENCE");
-          const isPassed = layerFindings.length === 0;
+          const unresolved = layerFindings.filter((f) => f.resolution === "PENDING");
+          const hasError = unresolved.some((f) => f.status === "CONTRADICTED");
+          const hasWarning = unresolved.some((f) => f.status === "INSUFFICIENT_EVIDENCE");
+          const layerAllResolved = layerFindings.length > 0 && unresolved.length === 0;
 
           return (
             <div
@@ -121,9 +152,11 @@ export function FindingsReport({ campaign, onRefresh }: FindingsReportProps) {
               </div>
               <div className="text-[13px] font-medium text-ink">
                 {hasError
-                  ? `${layerFindings.length} issue flagged`
+                  ? `${unresolved.length} issue flagged`
                   : hasWarning
                   ? "1 notice flagged"
+                  : layerAllResolved
+                  ? "Fix Accepted & Reconciled"
                   : "All checks verified"}
               </div>
               <div className="text-[11px] text-ash font-sans mt-0.5">{layerMeta[layer].subtitle}</div>

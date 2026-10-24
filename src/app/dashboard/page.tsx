@@ -259,77 +259,95 @@ export default function DashboardPage() {
               </div>
 
               {/* Navigation Tabs for Active Campaign */}
-              <div className="flex border-b border-mist overflow-x-auto gap-2">
-                <button
-                  onClick={() => setActiveTab("findings")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
-                    activeTab === "findings"
-                      ? "border-twilight text-ink font-semibold"
-                      : "border-transparent text-charcoal hover:text-ink"
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4 text-signal-blue" />
-                  Preflight Inspection Findings
-                  {selectedCampaign.packs?.[0]?.findings?.length > 0 && (
-                    <span className="text-[11px] font-mono px-2 py-0.2 rounded-pill bg-status-error-bg text-status-error font-semibold">
-                      {selectedCampaign.packs[0].findings.length}
-                    </span>
-                  )}
-                </button>
+              {(() => {
+                const latestPack = selectedCampaign.packs?.[0];
+                const totalFindings = latestPack?.findings?.length || 0;
+                const pendingCount = latestPack?.findings?.filter((f: any) => f.resolution === "PENDING").length || 0;
 
-                <button
-                  onClick={() => setActiveTab("creator")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
-                    activeTab === "creator"
-                      ? "border-twilight text-ink font-semibold"
-                      : "border-transparent text-charcoal hover:text-ink"
-                  }`}
-                >
-                  <FileEdit className="w-4 h-4 text-charcoal" />
-                  Creator Pack Uploader
-                </button>
+                return (
+                  <div className="flex border-b border-mist overflow-x-auto gap-2">
+                    <button
+                      onClick={() => setActiveTab("findings")}
+                      className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                        activeTab === "findings"
+                          ? "border-twilight text-ink font-semibold"
+                          : "border-transparent text-charcoal hover:text-ink"
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4 text-signal-blue" />
+                      Preflight Inspection Findings
+                      {totalFindings > 0 && (
+                        pendingCount > 0 ? (
+                          <span className="text-[11px] font-mono px-2 py-0.2 rounded-pill bg-status-error-bg text-status-error font-semibold">
+                            {pendingCount}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-mono px-2 py-0.2 rounded-pill bg-status-pass-bg text-status-pass font-semibold">
+                            ✓ Reconciled
+                          </span>
+                        )
+                      )}
+                    </button>
 
-                <button
-                  onClick={() => setActiveTab("contract")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
-                    activeTab === "contract"
-                      ? "border-twilight text-ink font-semibold"
-                      : "border-transparent text-charcoal hover:text-ink"
-                  }`}
-                >
-                  <Layers className="w-4 h-4 text-charcoal" />
-                  Campaign Contract Truth
-                </button>
+                    <button
+                      onClick={() => setActiveTab("creator")}
+                      className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                        activeTab === "creator"
+                          ? "border-twilight text-ink font-semibold"
+                          : "border-transparent text-charcoal hover:text-ink"
+                      }`}
+                    >
+                      <FileEdit className="w-4 h-4 text-charcoal" />
+                      Creator Pack Uploader
+                    </button>
 
-                <button
-                  onClick={() => setActiveTab("approval")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
-                    activeTab === "approval"
-                      ? "border-twilight text-ink font-semibold"
-                      : "border-transparent text-charcoal hover:text-ink"
-                  }`}
-                >
-                  <ShieldCheck className="w-4 h-4 text-signal-blue" />
-                  Authorised Review & Lock
-                </button>
+                    <button
+                      onClick={() => setActiveTab("contract")}
+                      className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                        activeTab === "contract"
+                          ? "border-twilight text-ink font-semibold"
+                          : "border-transparent text-charcoal hover:text-ink"
+                      }`}
+                    >
+                      <Layers className="w-4 h-4 text-charcoal" />
+                      Campaign Contract Truth
+                    </button>
 
-                <button
-                  onClick={() => setActiveTab("audit")}
-                  className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
-                    activeTab === "audit"
-                      ? "border-twilight text-ink font-semibold"
-                      : "border-transparent text-charcoal hover:text-ink"
-                  }`}
-                >
-                  <History className="w-4 h-4 text-ash" />
-                  Audit Trail
-                </button>
-              </div>
+                    <button
+                      onClick={() => setActiveTab("approval")}
+                      className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                        activeTab === "approval"
+                          ? "border-twilight text-ink font-semibold"
+                          : "border-transparent text-charcoal hover:text-ink"
+                      }`}
+                    >
+                      <ShieldCheck className="w-4 h-4 text-signal-blue" />
+                      Authorised Review & Lock
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("audit")}
+                      className={`pb-3 px-3 text-[14px] font-medium transition-all border-b-2 flex items-center gap-2 cursor-pointer shrink-0 ${
+                        activeTab === "audit"
+                          ? "border-twilight text-ink font-semibold"
+                          : "border-transparent text-charcoal hover:text-ink"
+                      }`}
+                    >
+                      <History className="w-4 h-4 text-ash" />
+                      Audit Trail
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Tab Contents */}
               <div className="pt-2">
                 {activeTab === "findings" && (
-                  <FindingsReport campaign={selectedCampaign} onRefresh={fetchCampaigns} />
+                  <FindingsReport 
+                    campaign={selectedCampaign} 
+                    onRefresh={fetchCampaigns} 
+                    onGoToApproval={() => setActiveTab("approval")}
+                  />
                 )}
 
                 {activeTab === "creator" && (
