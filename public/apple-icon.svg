@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180" fill="none">
+  <defs>
+    <linearGradient id="appleBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#282834" />
+      <stop offset="100%" stop-color="#181820" />
+    </linearGradient>
+    <linearGradient id="appleShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#41a1cf" />
+      <stop offset="100%" stop-color="#0081c0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="180" height="180" rx="42" fill="url(#appleBgGrad)" />
+  <rect x="3" y="3" width="174" height="174" rx="39" stroke="#41a1cf" stroke-width="3" stroke-opacity="0.3" fill="none" />
+
+  <!-- Shield -->
+  <path d="M90 38L126 53.5V78.7C126 103.1 110.3 125.3 90 133.4C69.7 125.3 54 103.1 54 78.7V53.5L90 38Z" 
+        fill="url(#appleShieldGrad)" 
+        fill-opacity="0.22"
+        stroke="url(#appleShieldGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" />
+
+  <!-- Checkmark -->
+  <path d="M74 85L86 97L107 72" 
+        stroke="#fefffc" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" />
+</svg>
