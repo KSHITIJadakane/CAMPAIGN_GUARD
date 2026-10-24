@@ -21,11 +21,11 @@ export default function HomePage() {
           <span>Round 2 Functional MVP • Automated Campaign Governance</span>
         </div>
 
-        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-ink font-normal tracking-tight leading-[1.1]">
+        <h1 className="font-serif text-6xl md:text-8xl lg:text-9xl text-ink font-normal tracking-tight leading-[1.1] animate-fade-in">
           The automated spell-checker for <span className="italic">brand facts</span> and campaign consistency.
         </h1>
 
-        <p className="text-[16px] sm:text-[18px] text-charcoal font-sans leading-relaxed max-w-2xl mx-auto">
+        <p className="text-xl sm:text-2xl text-charcoal font-sans leading-relaxed max-w-2xl mx-auto animate-fade-in-quick">
           When teams launch product campaigns, captions claim 20% off while banner graphics say 30%.
           CampaignGuard establishes a single human-verified truth contract, reconciles assets across four automated layers, and enforces cryptographic version-locked approvals.
         </p>
@@ -68,10 +68,10 @@ export default function HomePage() {
               <div
                 key={role}
                 onClick={() => handleSelectRoleAndGo(role)}
-                className={`p-6 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-6 rounded-2xl border transition-all transform hover:scale-105 hover:shadow-xl cursor-pointer flex flex-col justify-between ${
                   isCurrent
-                    ? "bg-paper border-twilight shadow-subtle-card ring-1 ring-twilight/20"
-                    : "bg-paper/70 border-mist hover:border-twilight/40"
+                    ? "bg-paper/80 backdrop-blur-sm border-twilight shadow-subtle-card ring-1 ring-twilight/20"
+                    : "bg-paper/60 backdrop-blur-sm border-mist hover:border-twilight/40"
                 }`}
               >
                 <div>
@@ -100,7 +100,7 @@ export default function HomePage() {
       </section>
 
       {/* The 4 Inspection Layers Blueprint */}
-      <section className="p-8 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-6">
+      <section className="p-8 bg-paper/70 backdrop-blur-sm rounded-2xl border border-mist shadow-subtle-card space-y-6 animate-slide-up">
         <div className="border-b border-mist pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <span className="text-[11px] font-mono uppercase tracking-widest text-ash">
