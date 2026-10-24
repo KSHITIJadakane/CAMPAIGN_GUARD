@@ -16,15 +16,26 @@ export function CampaignCard({ campaign, onSelect }: CampaignCardProps) {
   const latestPack = campaign.packs?.[0];
   const pendingFindings = latestPack?.findings?.filter((f: any) => f.resolution === "PENDING") || [];
 
+  const isDemo = campaign.id === "camp_ecosip_01" || campaign.title.includes("EcoSip");
+
   return (
-    <div className="bg-paper rounded-2xl border border-mist p-6 shadow-subtle-card hover:border-twilight/40 transition-all flex flex-col justify-between group">
+    <div className={`bg-paper rounded-2xl border p-6 shadow-subtle-card hover:border-twilight/50 transition-all flex flex-col justify-between group ${
+      isDemo ? "border-signal-blue/30 bg-paper/90" : "border-mist"
+    }`}>
       <div>
         {/* Top Header */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-ash">
-              {campaign.brand}
-            </span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[11px] font-mono uppercase tracking-widest text-ash">
+                {campaign.brand}
+              </span>
+              {isDemo && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-pill bg-signal-blue/15 text-signal-blue font-bold border border-signal-blue/30">
+                  🧪 Demo Benchmark
+                </span>
+              )}
+            </div>
             <h3 className="font-serif text-2xl text-ink font-normal tracking-tight group-hover:text-twilight transition-colors">
               {campaign.title}
             </h3>
@@ -73,10 +84,10 @@ export function CampaignCard({ campaign, onSelect }: CampaignCardProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => onSelect(campaign)}
-            className="text-[13px] font-medium px-3 py-1.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-colors flex items-center gap-1"
+            className="text-[13px] font-medium px-4 py-2 rounded-xl bg-twilight hover:bg-ink text-paper transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
           >
-            Open Console
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span>Enter Workspace</span>
+            <ArrowUpRight className="w-3.5 h-3.5 text-signal-blue" />
           </button>
         </div>
       </div>
