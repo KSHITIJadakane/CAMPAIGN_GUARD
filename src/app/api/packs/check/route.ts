@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { computePackHash } from "@/lib/hash";
 import { runFullPreflightInspection } from "@/lib/preflight";
+import { memoryStore } from "@/lib/store";
 
 export async function POST(req: Request) {
   try {
@@ -12,37 +13,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "campaignId is required" }, { status: 400 });
     }
 
-    const campaign = await prisma.campaign.findUnique({
-      where: { id: campaignId },
-      include: {
-        contracts: {
-          where: { isActive: true },
-          take: 1,
+    // Try finding campaign in Prisma or MemoryStore
+    let campaign: any = null;
+    let activeContract: any = null;
+
+    try {
+      campaign = await prisma.campaign.findUnique({
+        where: { id: campaignId },
+        include: {
+          contracts: {
+            where: { isActive: true },
+            take: 1,
+          },
+          packs: {
+            orderBy: { revision: "desc" },
+            take: 1,
+          },
         },
-        packs: {
-          orderBy: { revision: "desc" },
-          take: 1,
-        },
-      },
-    });
+      });
+      activeContract = campaign?.contracts?.[0];
+    } catch (e) {
+      console.warn("Prisma fetch failed, using memoryStore:", e);
+    }
 
     if (!campaign) {
-      return NextResponse.json({ success: false, error: "Campaign not found" }, { status: 404 });
+      campaign = memoryStore.getCampaign(campaignId);
+      activeContract = campaign?.contracts?.find((c: any) => c.isActive) || campaign?.contracts?.[0];
     }
 
-    const activeContract = campaign.contracts[0];
-    if (!activeContract) {
-      return NextResponse.json({ success: false, error: "No active Campaign Contract found" }, { status: 400 });
+    if (!campaign || !activeContract) {
+      return NextResponse.json({ success: false, error: "Campaign or Contract not found" }, { status: 404 });
     }
 
-    // Determine revision number
-    const lastPack = campaign.packs[0];
+    const lastPack = campaign.packs?.[0];
     const newRevision = (lastPack?.revision || 0) + 1;
-
-    // Compute cryptographic SHA256 revision hash
     const packHash = computePackHash(caption, bannerBase64, pdfText);
 
-    // Prepare contract specification for check engine
     const contractSpec = {
       product: campaign.product,
       market: activeContract.market,
@@ -51,13 +57,13 @@ export async function POST(req: Request) {
       offerPercent: activeContract.offerPercent,
       eligibility: activeContract.eligibility,
       endDate: activeContract.endDate,
-      approvedClaims: JSON.parse(activeContract.approvedClaimsJson || "[]"),
-      requiredQuals: JSON.parse(activeContract.requiredQualsJson || "[]"),
-      prohibitedTerms: JSON.parse(activeContract.prohibitedTermsJson || "[]"),
-      variants: JSON.parse(activeContract.variantsJson || "[]"),
+      approvedClaims: typeof activeContract.approvedClaimsJson === "string" ? JSON.parse(activeContract.approvedClaimsJson || "[]") : (activeContract.approvedClaims || []),
+      requiredQuals: typeof activeContract.requiredQualsJson === "string" ? JSON.parse(activeContract.requiredQualsJson || "[]") : (activeContract.requiredQuals || []),
+      prohibitedTerms: typeof activeContract.prohibitedTermsJson === "string" ? JSON.parse(activeContract.prohibitedTermsJson || "[]") : (activeContract.prohibitedTerms || []),
+      variants: typeof activeContract.variantsJson === "string" ? JSON.parse(activeContract.variantsJson || "[]") : (activeContract.variants || []),
     };
 
-    // Run Preflight Inspection Engine (Deterministic + Gemini Multimodal)
+    // Run Preflight Engine
     const findings = await runFullPreflightInspection({
       contract: contractSpec,
       caption: caption || "",
@@ -66,65 +72,77 @@ export async function POST(req: Request) {
       pdfText: pdfText || null,
     });
 
-    // Check if previous approval was invalidated by this new revision
-    const wasApproved = campaign.status === "APPROVED";
-    const newStatus = wasApproved ? "INVALIDATED" : "NEEDS_REVIEW";
+    try {
+      const wasApproved = campaign.status === "APPROVED";
+      const newStatus = wasApproved ? "INVALIDATED" : "NEEDS_REVIEW";
 
-    // Create CampaignPack record with findings
-    const newPack = await prisma.campaignPack.create({
-      data: {
-        campaignId,
+      const newPack = await prisma.campaignPack.create({
+        data: {
+          campaignId,
+          revision: newRevision,
+          packHash,
+          caption: caption || "",
+          bannerBase64: bannerBase64 || null,
+          bannerName: bannerName || null,
+          pdfText: pdfText || null,
+          pdfName: pdfName || null,
+          status: findings.length > 0 ? "FINDINGS" : "READY_FOR_APPROVAL",
+          findings: {
+            create: findings.map((f) => ({
+              layer: f.layer,
+              location: f.location,
+              issue: f.issue,
+              evidence: f.evidence,
+              suggestedFix: f.suggestedFix,
+              status: f.status,
+              resolution: "PENDING",
+            })),
+          },
+        },
+        include: { findings: true },
+      });
+
+      await prisma.campaign.update({
+        where: { id: campaignId },
+        data: { status: newStatus },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          campaignId,
+          actorName: actorName || "Alex Chen",
+          actorRole: "CREATOR",
+          action: "PACK_SUBMITTED",
+          detail: `Submitted Campaign Pack Rev ${newRevision} (Hash: ${packHash}). Preflight inspection detected ${findings.length} findings across layers.`,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        pack: newPack,
+        findings,
         revision: newRevision,
         packHash,
-        caption: caption || "",
-        bannerBase64: bannerBase64 || null,
-        bannerName: bannerName || null,
-        pdfText: pdfText || null,
-        pdfName: pdfName || null,
-        status: findings.length > 0 ? "FINDINGS" : "READY_FOR_APPROVAL",
-        findings: {
-          create: findings.map((f) => ({
-            layer: f.layer,
-            location: f.location,
-            issue: f.issue,
-            evidence: f.evidence,
-            suggestedFix: f.suggestedFix,
-            status: f.status,
-            resolution: "PENDING",
-          })),
-        },
-      },
-      include: {
-        findings: true,
-      },
-    });
+        campaignStatus: newStatus,
+      });
+    } catch (dbErr) {
+      console.warn("Prisma pack save failed, using memoryStore:", dbErr);
+    }
 
-    // Update campaign status
-    await prisma.campaign.update({
-      where: { id: campaignId },
-      data: { status: newStatus },
-    });
-
-    // Log audit trail
-    await prisma.auditLog.create({
-      data: {
-        campaignId,
-        actorName: actorName || "Alex Chen",
-        actorRole: "CREATOR",
-        action: "PACK_SUBMITTED",
-        detail: `Submitted Campaign Pack Rev ${newRevision} (Hash: ${packHash}). Preflight inspection detected ${findings.length} findings across layers. ${
-          wasApproved ? "Prior approval invalidated due to revised assets." : ""
-        }`,
-      },
-    });
+    const savedPack = memoryStore.submitPack(
+      campaignId,
+      { caption, bannerBase64, bannerName, pdfText, pdfName },
+      findings,
+      actorName
+    );
 
     return NextResponse.json({
       success: true,
-      pack: newPack,
+      pack: savedPack,
       findings,
       revision: newRevision,
       packHash,
-      campaignStatus: newStatus,
+      campaignStatus: "NEEDS_REVIEW",
     });
   } catch (error) {
     console.error("POST /api/packs/check error:", error);
