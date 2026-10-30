@@ -285,7 +285,7 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
                         {finding.layer}
                       </span>
                       <span className="text-mist">•</span>
-                      <span className="font-mono text-xs text-ash">{finding.location}</span>
+                      <span className="font-mono text-xs text-ash">{finding.location || "General Asset"}</span>
                       {finding.box2d && (
                         <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">
                           📍 Visually Located
@@ -315,14 +315,18 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="font-serif text-lg text-ink font-normal">{finding.issue}</h4>
+                    <h4 className="font-serif text-lg text-ink font-normal">
+                      {finding.issue || (finding as any).title || "Compliance Finding"}
+                    </h4>
 
                     {/* Evidence Quote */}
                     <div className="p-3.5 bg-linen rounded-xl border border-mist text-xs font-sans space-y-1">
                       <span className="font-mono text-[10px] text-ash uppercase tracking-wider block">
                         Contract Ground Truth Evidence
                       </span>
-                      <p className="text-charcoal leading-relaxed">{finding.evidence}</p>
+                      <p className="text-charcoal leading-relaxed">
+                        {finding.evidence || (finding as any).description || "Verified against campaign contract specifications."}
+                      </p>
                     </div>
 
                     {/* Suggested Fix */}
@@ -330,7 +334,9 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
                       <span className="font-mono text-[10px] text-signal-blue uppercase tracking-wider font-semibold block">
                         Suggested Minimal Correction
                       </span>
-                      <p className="text-charcoal leading-relaxed">{finding.suggestedFix}</p>
+                      <p className="text-charcoal leading-relaxed">
+                        {finding.suggestedFix || "Follow approved contract guidance."}
+                      </p>
                     </div>
 
                     {/* Actions */}

@@ -21,16 +21,24 @@ export function AnnotatedCreativeViewer({
 }: AnnotatedCreativeViewerProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  // Ensure safe findings array
+  const safeFindings = Array.isArray(findings) ? findings : [];
+
   // Filter findings with valid box2d coordinates
-  const visualFindings = findings.filter(
+  const visualFindings = safeFindings.filter(
     (f) =>
+      Boolean(f) &&
       Array.isArray(f.box2d) &&
       f.box2d.length === 4 &&
       f.box2d.every((n) => typeof n === "number" && !isNaN(n))
   );
 
-  const unanchoredFindings = findings.filter(
-    (f) => !f.box2d && (f.location.toLowerCase().includes("banner") || f.location.toLowerCase().includes("visual"))
+  const unanchoredFindings = safeFindings.filter(
+    (f) =>
+      Boolean(f) &&
+      !f.box2d &&
+      typeof f.location === "string" &&
+      (f.location.toLowerCase().includes("banner") || f.location.toLowerCase().includes("visual"))
   );
 
   return (
@@ -176,15 +184,15 @@ export function AnnotatedCreativeViewer({
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono font-bold text-red-600">
-                  Annotation #{idx + 1} • {f.location}
+                  Annotation #{idx + 1} • {f.location || "Visual Creative"}
                 </span>
                 <span className="text-[10px] font-mono text-ash">
                   box: [{f.box2d?.join(", ")}]
                 </span>
               </div>
-              <p className="font-medium text-ink">{f.issue}</p>
+              <p className="font-medium text-ink">{f.issue || (f as any).title || "Compliance Finding"}</p>
               <p className="text-charcoal text-[11px] leading-relaxed">
-                <strong>Fix:</strong> {f.suggestedFix}
+                <strong>Fix:</strong> {f.suggestedFix || "Follow campaign specifications"}
               </p>
             </div>
           );
