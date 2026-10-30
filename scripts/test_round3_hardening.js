@@ -13,7 +13,7 @@
  * 9. Demo State Reset API (restores pristine Rev 1 state)
  */
 
-const base = process.env.TEST_BASE_URL || "http://localhost:3000";
+const base = (process.env.TEST_BASE_URL || "http://localhost:3000").trim();
 
 async function runHardeningTests() {
   console.log(`\n======================================================`);
