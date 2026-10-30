@@ -244,6 +244,26 @@ function DashboardContent() {
     }
   };
 
+  const handleResetDemo = async () => {
+    setLoading(true);
+    setActionNotice("Resetting EcoSip demo benchmark to initial pre-seeded state...");
+    try {
+      const res = await fetch("/api/demo/reset", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        await fetchCampaigns();
+        navigateToCampaign("camp_ecosip_01", "findings");
+        setRole("BRAND_MANAGER");
+        setActionNotice("✓ EcoSip demo benchmark restored with initial preflight contradictions.");
+        setTimeout(() => setActionNotice(null), 5000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Group campaigns into Live vs Demo
   const demoCampaigns = campaigns.filter((c) => c.id === "camp_ecosip_01" || c.title.includes("EcoSip"));
   const liveCampaigns = campaigns.filter((c) => c.id !== "camp_ecosip_01" && !c.title.includes("EcoSip"));
@@ -784,6 +804,15 @@ function DashboardContent() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button
+                    onClick={handleResetDemo}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono font-medium transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 disabled:opacity-50"
+                    title="Reset benchmark scenario back to initial state with pre-seeded contradictions"
+                  >
+                    <RotateCcw className={`w-3 h-3 text-ash ${loading ? "animate-spin" : ""}`} />
+                    <span>Reset Benchmark</span>
+                  </button>
+                  <button
                     onClick={() => setIsCreating(true)}
                     className="px-3 py-1.5 rounded-xl bg-twilight hover:bg-ink text-paper text-xs font-mono font-medium transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5"
                   >
@@ -921,8 +950,8 @@ function DashboardContent() {
                 </>
               )}
 
-              {/* State A: Contradictions pending */}
-              {latestPack && pendingCount > 0 && !isApproved && (
+              {/* State D: Post-Approval Modification / Invalidation (Takes Priority) */}
+              {latestPack && isInvalidated && (
                 <>
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-xl bg-status-error-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-error-border">
@@ -931,73 +960,72 @@ function DashboardContent() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-status-error-bg text-status-error font-semibold">
-                          Action Required • Step 3
+                          Approval Revoked • Signature Invalidation
                         </span>
-                        <span className="text-xs font-mono text-ash">
-                          {pendingCount} contradictions detected
-                        </span>
+                        {pendingCount > 0 ? (
+                          <span className="text-xs font-mono text-status-error font-bold">
+                            {pendingCount} new contradiction{pendingCount > 1 ? "s" : ""} introduced
+                          </span>
+                        ) : (
+                          <span className="text-xs font-mono text-status-pass font-bold">
+                            All contradictions reconciled
+                          </span>
+                        )}
                       </div>
                       <h3 className="font-serif text-lg text-ink font-normal mt-0.5">
-                        Reconcile Creative Copy with Contract Truth
+                        {pendingCount > 0
+                          ? "Post-Approval Asset Tamper Detected — Contradictions Introduced"
+                          : "Contradictions Reconciled Post-Invalidation — Ready to Re-Lock"}
                       </h3>
                       <p className="text-xs text-charcoal font-sans mt-0.5 leading-relaxed max-w-xl">
-                        The submitted creative pack contains claims that contradict Contract v{activeContract?.version || 1}. Accept the suggested fixes to harmonize the campaign.
+                        {pendingCount > 0
+                          ? `An out-of-band modification was detected post-approval. CampaignGuard revoked the cryptographic lock. Click below to 1-click auto-fix all contradictions, or review findings.`
+                          : `All tampered copy claims have been reconciled with Contract v${activeContract?.version || 1}. Marcus Vance (Authorised Reviewer) can now re-execute the cryptographic lock.`}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-                    <button
-                      onClick={handleQuickAcceptAll}
-                      disabled={loading}
-                      className="px-4 py-2.5 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
-                    >
-                      <Zap className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                      <span>1-Click Accept All Fixes</span>
-                    </button>
-                    <button
-                      onClick={() => navigateToTab("findings")}
-                      className="px-3.5 py-2.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center justify-center gap-1 cursor-pointer active:scale-95"
-                    >
-                      <span>Review Issues</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-ash" />
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* State B: Clean & ready for gatekeeper lock */}
-              {latestPack && isClean && !isApproved && (
-                <>
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-status-pass-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-pass-border">
-                      <CheckCircle2 className="w-5 h-5 text-status-pass" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-status-pass-bg text-status-pass font-semibold">
-                          Ready for Sign-Off • Step 4
-                        </span>
-                        <span className="text-xs font-mono text-ash">All checks harmonized</span>
-                      </div>
-                      <h3 className="font-serif text-lg text-ink font-normal mt-0.5">
-                        All Inconsistencies Resolved — Ready for Gatekeeper Lock
-                      </h3>
-                      <p className="text-xs text-charcoal font-sans mt-0.5 leading-relaxed max-w-xl">
-                        All preflight findings have been reconciled with Contract v{activeContract?.version || 1}. Marcus Vance (Authorised Reviewer) can now bind the cryptographic SHA-256 seal.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-                    <button
-                      onClick={handleQuickLock}
-                      disabled={loading}
-                      className="px-4 py-2.5 rounded-xl bg-twilight hover:bg-ink text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
-                    >
-                      <Lock className="w-3.5 h-3.5 text-signal-blue" />
-                      <span>Switch to Reviewer & Execute Lock →</span>
-                    </button>
+                    {pendingCount > 0 ? (
+                      <>
+                        <button
+                          onClick={handleQuickAcceptAll}
+                          disabled={loading}
+                          className="px-4 py-2.5 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+                          title="1-Click Reconcile all pending contradictions with Contract truth"
+                        >
+                          <Zap className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                          <span>1-Click Auto-Fix & Reconcile</span>
+                        </button>
+                        <button
+                          onClick={() => navigateToTab("findings")}
+                          className="px-3.5 py-2.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        >
+                          <span>Review Issues</span>
+                          <ArrowRight className="w-3.5 h-3.5 text-ash" />
+                        </button>
+                        {isDemo && (
+                          <button
+                            onClick={handleResetDemo}
+                            disabled={loading}
+                            className="px-3 py-2.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                            title="Reset demo benchmark to pristine initial state"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 text-ash" />
+                            <span>Reset Demo</span>
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleQuickLock}
+                        disabled={loading}
+                        className="px-4 py-2.5 rounded-xl bg-twilight hover:bg-ink text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+                      >
+                        <Lock className="w-3.5 h-3.5 text-signal-blue" />
+                        <span>Switch to Reviewer & Re-Lock →</span>
+                      </button>
+                    )}
                   </div>
                 </>
               )}
@@ -1041,8 +1069,8 @@ function DashboardContent() {
                 </>
               )}
 
-              {/* State D: Approval Invalidated */}
-              {latestPack && isInvalidated && (
+              {/* State A: Contradictions pending (Baseline, not invalidated, not approved) */}
+              {latestPack && !isInvalidated && !isApproved && pendingCount > 0 && (
                 <>
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-xl bg-status-error-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-error-border">
@@ -1051,24 +1079,72 @@ function DashboardContent() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-status-error-bg text-status-error font-semibold">
-                          Approval Revoked • Signature Invalidation
+                          Action Required • Step 3
+                        </span>
+                        <span className="text-xs font-mono text-ash">
+                          {pendingCount} contradictions detected
                         </span>
                       </div>
                       <h3 className="font-serif text-lg text-ink font-normal mt-0.5">
-                        Post-Approval Modification Detected
+                        Reconcile Creative Copy with Contract Truth
                       </h3>
                       <p className="text-xs text-charcoal font-sans mt-0.5 leading-relaxed max-w-xl">
-                        A creator modified copy or a brand lead changed contract rules after approval. CampaignGuard immediately invalidated the lock to prevent non-compliant distribution.
+                        The submitted creative pack contains claims that contradict Contract v{activeContract?.version || 1}. Accept the suggested fixes to harmonize the campaign.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
                     <button
-                      onClick={() => navigateToTab("findings")}
-                      className="px-4 py-2.5 rounded-xl bg-status-error text-paper hover:opacity-90 font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                      onClick={handleQuickAcceptAll}
+                      disabled={loading}
+                      className="px-4 py-2.5 rounded-xl bg-signal-blue hover:bg-cerulean text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
                     >
-                      <span>Review Inconsistencies & Re-Approve →</span>
+                      <Zap className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                      <span>1-Click Accept All Fixes</span>
+                    </button>
+                    <button
+                      onClick={() => navigateToTab("findings")}
+                      className="px-3.5 py-2.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    >
+                      <span>Review Issues</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-ash" />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* State B: Clean & ready for gatekeeper lock (Baseline, not invalidated, not approved) */}
+              {latestPack && !isInvalidated && !isApproved && isClean && (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-status-pass-bg flex items-center justify-center shrink-0 mt-0.5 border border-status-pass-border">
+                      <CheckCircle2 className="w-5 h-5 text-status-pass" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-pill bg-status-pass-bg text-status-pass font-semibold">
+                          Ready for Sign-Off • Step 4
+                        </span>
+                        <span className="text-xs font-mono text-ash">All checks harmonized</span>
+                      </div>
+                      <h3 className="font-serif text-lg text-ink font-normal mt-0.5">
+                        All Inconsistencies Resolved — Ready for Gatekeeper Lock
+                      </h3>
+                      <p className="text-xs text-charcoal font-sans mt-0.5 leading-relaxed max-w-xl">
+                        All preflight findings have been reconciled with Contract v{activeContract?.version || 1}. Marcus Vance (Authorised Reviewer) can now bind the cryptographic SHA-256 seal.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+                    <button
+                      onClick={handleQuickLock}
+                      disabled={loading}
+                      className="px-4 py-2.5 rounded-xl bg-twilight hover:bg-ink text-paper font-medium text-xs font-mono shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-signal-blue" />
+                      <span>Switch to Reviewer & Execute Lock →</span>
                     </button>
                   </div>
                 </>
@@ -1126,7 +1202,12 @@ function DashboardContent() {
                 )}
 
                 {activeTab === "approval" && (
-                  <ApprovalPanel campaign={selectedCampaign} onApproved={fetchCampaigns} />
+                  <ApprovalPanel 
+                    campaign={selectedCampaign} 
+                    onApproved={fetchCampaigns}
+                    onNavigateTab={navigateToTab}
+                    onResetDemo={handleResetDemo}
+                  />
                 )}
 
                 {activeTab === "audit" && (

@@ -800,6 +800,28 @@ export const memoryStore = {
     return null;
   },
 
+  resetDemo(): StoredCampaign {
+    const cleanEcosip = JSON.parse(JSON.stringify(INITIAL_CAMPAIGNS[0]));
+    cleanEcosip.createdAt = new Date().toISOString();
+    cleanEcosip.updatedAt = new Date().toISOString();
+    if (cleanEcosip.packs && cleanEcosip.packs[0]) {
+      cleanEcosip.packs[0].createdAt = new Date().toISOString();
+      cleanEcosip.packs[0].findings.forEach((f: any) => {
+        f.resolution = "PENDING";
+        f.createdAt = new Date().toISOString();
+      });
+    }
+    const camps = this.getCampaigns();
+    const index = camps.findIndex((c: StoredCampaign) => c.id === "camp_ecosip_01");
+    if (index >= 0) {
+      camps[index] = cleanEcosip;
+    } else {
+      camps.unshift(cleanEcosip);
+    }
+    globalStore._cg_campaigns = camps;
+    return cleanEcosip;
+  },
+
   // === FEATURE 3: CROSS-CAMPAIGN GOVERNANCE ANALYTICS AGGREGATOR ===
   getGovernanceAnalytics(): GovernanceAnalyticsData {
     const campaigns = this.getCampaigns();

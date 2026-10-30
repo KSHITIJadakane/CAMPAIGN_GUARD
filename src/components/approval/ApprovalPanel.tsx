@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldCheck, Lock, AlertTriangle, CheckCircle2, History, ShieldAlert } from "lucide-react";
+import { ShieldCheck, Lock, AlertTriangle, CheckCircle2, History, ShieldAlert, Zap, RotateCcw } from "lucide-react";
 import { useRole } from "@/components/layout/RoleContext";
 
 interface ApprovalPanelProps {
   campaign: any;
   onApproved: () => void;
+  onNavigateTab?: (tab: any) => void;
+  onResetDemo?: () => void;
 }
 
-export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
+export function ApprovalPanel({ campaign, onApproved, onNavigateTab, onResetDemo }: ApprovalPanelProps) {
   const { currentUser } = useRole();
   const latestPack = campaign.packs?.[0];
   const activeContract = campaign.contracts?.find((c: any) => c.isActive) || campaign.contracts?.[0];
@@ -17,12 +19,40 @@ export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
 
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [autoResolving, setAutoResolving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
   const pendingFindings = latestPack?.findings?.filter((f: any) => f.resolution === "PENDING") || [];
   const hasContradictions = pendingFindings.some((f: any) => f.status === "CONTRADICTED");
   const isApproved = campaign.status === "APPROVED";
   const isInvalidated = campaign.status === "INVALIDATED";
+  const isDemo = campaign.id === "camp_ecosip_01" || campaign.title?.includes("EcoSip");
+
+  const handleAutoResolve = async () => {
+    if (pendingFindings.length === 0) return;
+    setAutoResolving(true);
+    try {
+      for (const f of pendingFindings) {
+        await fetch("/api/findings/resolve", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            findingId: f.id,
+            resolution: "ACCEPTED",
+            actorName: currentUser.name,
+            actorRole: currentUser.role,
+          }),
+        });
+      }
+      setSuccessMsg("✓ All contradictions reconciled in 1 click! Ready for cryptographic locking.");
+      setTimeout(() => setSuccessMsg(""), 4000);
+      onApproved();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAutoResolving(false);
+    }
+  };
 
   const handleApprove = async () => {
     if (!latestPack) return;
@@ -139,13 +169,40 @@ export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
 
       {/* Invalidation Alert Banner */}
       {isInvalidated && (
-        <div className="p-4 bg-status-error-bg border border-status-error-border rounded-xl text-status-error flex items-start gap-3">
-          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="text-[13px] font-sans">
-            <h4 className="font-semibold font-mono text-[13px]">Cryptographic Lock Invalidation Triggered</h4>
-            <p className="mt-0.5 text-charcoal">
-              A creator edited asset copy or a brand manager revised the Campaign Contract after the previous approval. The campaign state has been revoked to prevent publishing non-compliant assets.
-            </p>
+        <div className="p-4 bg-status-error-bg border border-status-error-border rounded-xl text-status-error flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-status-error" />
+            <div className="text-[13px] font-sans">
+              <h4 className="font-semibold font-mono text-[13px]">Cryptographic Lock Invalidation Triggered</h4>
+              <p className="mt-0.5 text-charcoal">
+                A post-approval modification was detected ({pendingFindings.length} contradiction{pendingFindings.length === 1 ? "" : "s"} flagged). Approval lock revoked.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {pendingFindings.length > 0 && (
+              <button
+                type="button"
+                onClick={handleAutoResolve}
+                disabled={autoResolving}
+                className="px-3 py-1.5 rounded-lg bg-twilight hover:bg-ink text-paper text-xs font-mono font-medium shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+                title="1-Click Reconcile all pending contradictions with Contract truth"
+              >
+                <Zap className={`w-3.5 h-3.5 text-signal-blue ${autoResolving ? "animate-spin" : ""}`} />
+                <span>{autoResolving ? "Reconciling..." : "1-Click Auto-Fix All"}</span>
+              </button>
+            )}
+            {isDemo && onResetDemo && (
+              <button
+                type="button"
+                onClick={onResetDemo}
+                className="px-3 py-1.5 rounded-lg border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                title="Reset demo scenario back to pristine Rev 1 state"
+              >
+                <RotateCcw className="w-3 h-3 text-ash" />
+                <span>Reset Demo</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -153,20 +210,43 @@ export function ApprovalPanel({ campaign, onApproved }: ApprovalPanelProps) {
       {/* Success Notification */}
       {successMsg && (
         <div className="p-3 bg-status-pass-bg border border-status-pass-border text-status-pass rounded-xl text-[13px] flex items-center gap-2 font-mono">
-          <CheckCircle2 className="w-4 h-4" />
-          {successMsg}
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{successMsg}</span>
         </div>
       )}
 
       {/* Warning if unaddressed critical contradictions remain */}
       {hasContradictions && !isApproved && (
-        <div className="p-4 bg-status-warn-bg border border-status-warn-border rounded-xl text-status-warn flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div className="text-[13px] font-sans">
-            <h4 className="font-semibold font-mono text-[13px]">Unresolved Contradictions Remaining</h4>
-            <p className="mt-0.5 text-charcoal">
-              {pendingFindings.length} findings are still pending resolution. Approving now constitutes an explicit exception override that will be permanently logged in the audit trail.
-            </p>
+        <div className="p-4 bg-status-warn-bg border border-status-warn-border rounded-xl text-status-warn flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-status-warn" />
+            <div className="text-[13px] font-sans">
+              <h4 className="font-semibold font-mono text-[13px]">Unresolved Contradictions Remaining ({pendingFindings.length})</h4>
+              <p className="mt-0.5 text-charcoal">
+                {pendingFindings.length} preflight finding{pendingFindings.length === 1 ? "" : "s"} still pending resolution before locking.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleAutoResolve}
+              disabled={autoResolving}
+              className="px-3.5 py-1.5 rounded-lg bg-status-warn text-paper hover:opacity-90 text-xs font-mono font-medium shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+              title="1-Click Reconcile all pending contradictions with Contract truth"
+            >
+              <Zap className={`w-3.5 h-3.5 ${autoResolving ? "animate-spin" : ""}`} />
+              <span>{autoResolving ? "Reconciling..." : "1-Click Auto-Fix All"}</span>
+            </button>
+            {onNavigateTab && (
+              <button
+                type="button"
+                onClick={() => onNavigateTab("findings")}
+                className="px-3 py-1.5 rounded-lg border border-status-warn-border text-status-warn bg-paper hover:bg-linen text-xs font-mono transition-colors cursor-pointer"
+              >
+                Inspect in Scan →
+              </button>
+            )}
           </div>
         </div>
       )}
