@@ -11,6 +11,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "campaignId and packId are required" }, { status: 400 });
     }
 
+    // Strict Server-Side RBAC Enforcement (Round 3 Enterprise Hardening)
+    // Creators and Brand Managers are explicitly forbidden from executing approvals
+    if (reviewerRole !== "REVIEWER") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Forbidden: Only users with the REVIEWER role (Authorised Final Approver) are permitted to execute cryptographic version-locks. Role '${reviewerRole || "UNASSIGNED"}' is unauthorized.`,
+          requiredRole: "REVIEWER",
+          providedRole: reviewerRole || "UNASSIGNED",
+        },
+        { status: 403 }
+      );
+    }
+
     try {
       const campaign = await prisma.campaign.findUnique({
         where: { id: campaignId },

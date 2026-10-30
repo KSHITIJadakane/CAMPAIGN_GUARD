@@ -240,7 +240,7 @@ const htmlContent = `<!DOCTYPE html>
         <span class="badge badge-blue" style="margin-bottom: 1.5mm;">TOP 50 FINALIST • SELECTED FROM 1,500+ TEAMS</span>
         <h1>CampaignGuard: Automated Pre-Publication Governance & Cross-Asset Truth Verification</h1>
         <p class="lead" style="margin-top: 2mm;">
-          A multi-role enterprise preflight system that eliminates brand, legal, and mathematical non-compliance before marketing campaigns reach public distribution.
+          A multi-role enterprise preflight system that detects and prevents brand, legal, and mathematical non-compliance before marketing campaigns reach public distribution.
         </p>
       </div>
 
@@ -249,7 +249,7 @@ const htmlContent = `<!DOCTYPE html>
         <table style="margin-top: 1mm; font-size: 8pt;">
           <tr>
             <td style="width: 25%; font-weight: 600;">Live Web Application</td>
-            <td><strong style="color: #2563eb;">https://campaign-guard.vercel.app</strong> (Deployed & fully open to judges)</td>
+            <td><strong style="color: #2563eb;">https://cg.kshitijpro.xyz</strong> (Primary production deployment)</td>
           </tr>
           <tr>
             <td style="font-weight: 600;">Local Reproduction</td>
@@ -257,11 +257,11 @@ const htmlContent = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="font-weight: 600;">Source Code Repository</td>
-            <td><strong>GitHub:</strong> KSHITIJadakane/CAMPAIGN_GUARD</td>
+            <td><strong>GitHub:</strong> https://github.com/KSHITIJadakane/CAMPAIGN_GUARD</td>
           </tr>
           <tr>
             <td style="font-weight: 600;">Interactive Demo Guide</td>
-            <td><a href="/demo-guide" style="color: #2563eb; text-decoration: none;"><strong>/demo-guide</strong></a> — 5-minute standalone judge evaluation blueprint</td>
+            <td><a href="https://cg.kshitijpro.xyz/demo-guide" style="color: #2563eb; text-decoration: none;"><strong>https://cg.kshitijpro.xyz/demo-guide</strong></a> — 5-minute standalone judge evaluation blueprint</td>
           </tr>
           <tr>
             <td style="font-weight: 600;">Round 3 Deliverables</td>
@@ -273,7 +273,7 @@ const htmlContent = `<!DOCTYPE html>
       <div>
         <h2>The Core Problem & Industry Breakthrough</h2>
         <p>
-          In modern digital marketing, a single promotional campaign spans Instagram captions, display banners, PDF specifications, and email newsletters. Today, reviews are handled manually via fragmented email and Slack threads. Mismatched discounts (e.g. 30% on graphic vs. 20% in copy), prohibited health claims ("Miracle cure"), and missing legal qualifiers cost global retailers over $1.4B annually in regulatory fines and customer churn.
+          In modern digital marketing, a single promotional campaign spans Instagram captions, display banners, PDF specifications, and email newsletters. Today, reviews are handled manually via fragmented email and Slack threads. Mismatched discounts (e.g. 30% on graphic vs. 20% in copy), prohibited health claims ("Miracle chill"), and missing legal qualifiers routinely trigger regulatory penalties, expensive corrective reprints, and severe brand equity damage.
         </p>
         <p style="margin-top: 1.5mm;">
           <strong>CampaignGuard solves this deterministically.</strong> Brand Managers establish a canonical <em>Truth Contract</em>. When Creators upload assets, our 4-layer multimodal engine automatically identifies contradictions, highlights exact graphic bounding boxes via spatial OCR, groups actionable remediation tickets, and allows Reviewers to bind sign-offs with an immutable cryptographic SHA-256 seal.
@@ -377,13 +377,13 @@ const htmlContent = `<!DOCTYPE html>
           <tr>
             <td><strong>Round 2</strong></td>
             <td><strong>Interactive Benchmarks</strong></td>
-            <td>Pre-seeded EcoSip Flash Sale benchmark scenario containing 3 intentional contradictions for instant evaluation without uploading files.</td>
+            <td>Pre-seeded EcoSip Flash Sale benchmark scenario containing 4 canonical contradictions across 3 layers (discount, cold retention, bottle capacity, prohibited superlative) for instant evaluation without uploading files.</td>
             <td><span class="badge badge-green">VERIFIED</span></td>
           </tr>
           <tr>
             <td><strong>Round 3</strong></td>
             <td><strong>Feature 1: RBAC & Invites</strong></td>
-            <td>Tokenized campaign invitations (<code>/invite?token=...</code>), role scoping (Brand Lead, Creator, Reviewer), and modal token management.</td>
+            <td>Tokenized campaign invitations (<code>/invite?token=...</code>), server-side 403 RBAC enforcement, role scoping (Brand Lead, Creator, Reviewer), and modal token management.</td>
             <td><span class="badge badge-blue">R3 DELIVERED</span></td>
           </tr>
           <tr>
@@ -402,9 +402,9 @@ const htmlContent = `<!DOCTYPE html>
       </table>
 
       <div class="card" style="margin-top: 1mm;">
-        <h3>Zero-Friction Evaluation Guarantee for Judges</h3>
+        <h3>Zero-Friction Evaluation Guarantee & Dual Persistence</h3>
         <p style="font-size: 8.2pt;">
-          To ensure 100% reliability and zero judge lockouts, CampaignGuard utilizes a hybrid architecture: an in-memory unified store pre-seeded with rich benchmark data that functions with zero latency on serverless edge environments (Vercel), while supporting Prisma SQLite for local runs. Judges can evaluate full role-scoping using the interactive persona switcher or test authentic invite link flows via <code>/invite?token=inv_ecosip_creator_demo</code>.
+          To guarantee zero judge lockouts and zero cold-start delay, CampaignGuard uses a dual-tier architecture: an in-memory benchmark store pre-seeded with 4 benchmark campaigns and live change orders for instant evaluation, coupled with a complete, typed Prisma ORM SQLite/PostgreSQL schema (<code>prisma/schema.prisma</code>) for durable enterprise deployments. Judges can test role boundaries via the instant switcher or test real invite link lifecycles via <code>/invite?token=inv_ecosip_creator_demo</code>.
         </p>
       </div>
     </div>
@@ -441,8 +441,9 @@ const htmlContent = `<!DOCTYPE html>
           </p>
           <ul style="font-size: 7.8pt; line-height: 1.5; padding-left: 14px; color: #334155;">
             <li><strong>Route:</strong> <code>/invite?token=[token]</code></li>
-            <li><strong>State Verification:</strong> Real-time token validation against campaign membership status and expiration timestamps.</li>
+            <li><strong>State Verification:</strong> Real-time token validation against campaign membership, 7-day expiration (410 on expiry), and REVOKED flags.</li>
             <li><strong>1-Click Acceptance:</strong> Invited creators or legal reviewers enter their name and automatically join the workspace.</li>
+            <li><strong>Server-Side 403 RBAC:</strong> <code>/api/packs/approve</code> rejects non-Reviewer approval calls with HTTP <code>403 Forbidden</code>.</li>
             <li><strong>Revocation Control:</strong> Brand Leads can inspect active links, copy URLs, and instantly revoke pending tokens.</li>
           </ul>
         </div>
@@ -580,24 +581,27 @@ const htmlContent = `<!DOCTYPE html>
 
       <div class="grid-3">
         <div class="card">
-          <span class="badge badge-blue">METRIC 1 & 2</span>
-          <h3 style="margin-top: 1mm;">Total Audits & Violations</h3>
+          <span class="badge badge-blue">KPI 1 & 2</span>
+          <h3 style="margin-top: 1mm;">Audits & Violations</h3>
           <p style="font-size: 8pt;">
-            Live aggregation across all brand briefs tracking total preflight scans executed and confirmed policy contradictions prevented prior to distribution.
+            <strong>Campaigns Audited:</strong> Active briefs with executed preflight scans.<br/>
+            <strong>Confirmed Violations:</strong> Pre-publication contradictions caught prior to distribution.
           </p>
         </div>
         <div class="card">
-          <span class="badge badge-green">METRIC 3 & 4</span>
-          <h3 style="margin-top: 1mm;">First-Pass Rate & Cycles</h3>
+          <span class="badge badge-green">KPI 3 & 4</span>
+          <h3 style="margin-top: 1mm;">First-Pass & Rounds</h3>
           <p style="font-size: 8pt;">
-            Measures the percentage of campaigns passing sign-off on Revision 1 (industry benchmark: 75%) and average correction rounds needed to reach compliance.
+            <strong>First-Pass Rate (%):</strong> Percentage of assets approved at Rev 1 without revisions.<br/>
+            <strong>Average Revision Rounds:</strong> Mean correction cycles required to reach sign-off.
           </p>
         </div>
         <div class="card">
-          <span class="badge badge-amber">METRIC 5</span>
-          <h3 style="margin-top: 1mm;">Workflow Bottlenecks</h3>
+          <span class="badge badge-amber">KPI 5 & BOTTLENECK</span>
+          <h3 style="margin-top: 1mm;">Vault & Bottlenecks</h3>
           <p style="font-size: 8pt;">
-            Identifies approval lag by role: Creator queue (waiting for asset revision) vs Reviewer queue (waiting for legal gatekeeper signature).
+            <strong>Sealed Vault:</strong> Approved SHA-256 locked packs.<br/>
+            <strong>Bottleneck Tracker:</strong> Operational queue monitor tracking wait times by Creator vs Reviewer role.
           </p>
         </div>
       </div>
@@ -688,7 +692,7 @@ const htmlContent = `<!DOCTYPE html>
         </p>
         <ul style="font-size: 7.8pt; line-height: 1.45; padding-left: 14px; color: #334155; margin-top: 1.5mm;">
           <li><strong>Local Execution:</strong> Full Prisma ORM with SQLite database migrations (<code>prisma/dev.db</code>).</li>
-          <li><strong>Production Serverless:</strong> In-memory global singleton store pre-seeded with rich benchmark campaigns, active members, invites, and change orders. Guarantees 0ms latency, zero cold-start failures, and 100% judge uptime without external database credentials.</li>
+          <li><strong>Production Serverless:</strong> In-memory global singleton store pre-seeded with rich benchmark campaigns, active members, invites, and change orders. Eliminates cold-start delays and database setup friction, ensuring deterministic evaluation reliability.</li>
         </ul>
       </div>
 
@@ -770,8 +774,20 @@ const htmlContent = `<!DOCTYPE html>
             <td><span class="badge badge-green">PASSED</span></td>
           </tr>
           <tr>
+            <td><strong>Server-Side RBAC Guard</strong></td>
+            <td><code>POST /api/packs/approve</code> strictly rejects unauthorized callers with HTTP <code>403 Forbidden</code>.</td>
+            <td>100%</td>
+            <td><span class="badge badge-green">PASSED</span></td>
+          </tr>
+          <tr>
             <td><strong>Tamper Invalidation Flow</strong></td>
             <td><code>POST /api/packs/approve</code> cryptographic seal bound; subsequent asset modification revokes lock to INVALIDATED.</td>
+            <td>100%</td>
+            <td><span class="badge badge-green">PASSED</span></td>
+          </tr>
+          <tr>
+            <td><strong>Demo State Reset API</strong></td>
+            <td><code>POST /api/demo/reset</code> restores pristine Rev 1 benchmark state for repeatable judge evaluations.</td>
             <td>100%</td>
             <td><span class="badge badge-green">PASSED</span></td>
           </tr>
@@ -876,11 +892,11 @@ const htmlContent = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="font-weight: 600;">Minute 4</td>
-            <td><strong>1-Click Fix & Version Lock:</strong> Click "1-Click Accept All Fixes". Navigate to <strong>Step 4 (Gatekeeper Lock)</strong>, switch to Reviewer persona, and execute the cryptographic SHA-256 seal.</td>
+            <td><strong>1-Click Fix & Version Lock:</strong> Click "1-Click Accept All Fixes" (available in Step 3 Scan or Step 4 Approval banner). Switch to Reviewer persona, inspect clean state, and execute the cryptographic SHA-256 seal.</td>
           </tr>
           <tr>
             <td style="font-weight: 600;">Minute 5</td>
-            <td><strong>Tamper Invalidation & Invites:</strong> Click "Simulate Asset Tamper" to observe instant lock revocation. Open "Team & Invites" modal to copy a live invite token or visit <code>/invite?token=inv_ecosip_creator_demo</code>.</td>
+            <td><strong>Tamper Invalidation & Demo Reset:</strong> Click "Simulate Asset Tamper" to observe instant lock revocation to INVALIDATED. Use 1-click re-lock or "Reset Demo" button to restore pristine benchmark state anytime. Open "Team & Invites" to test 7-day tokenized invite links.</td>
           </tr>
         </table>
       </div>

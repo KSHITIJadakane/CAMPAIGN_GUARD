@@ -30,7 +30,8 @@ export async function runGeminiInspection(input: PreflightInspectionInput): Prom
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     const contractSummary = `
 PRODUCT: ${input.contract.product}

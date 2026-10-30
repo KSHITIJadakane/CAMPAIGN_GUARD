@@ -309,13 +309,250 @@ const INITIAL_CAMPAIGNS: StoredCampaign[] = [
       },
     ],
   },
+  {
+    id: "camp_solarglow_02",
+    title: "SolarGlow SPF50 Summer Launch",
+    product: "SolarGlow Daily Mineral Sunscreen SPF 50",
+    brand: "SolarGlow Skincare",
+    status: "APPROVED",
+    currentContractVersion: 1,
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    contracts: [
+      {
+        id: "ct_sg_01",
+        version: 1,
+        title: "SolarGlow Mineral SPF 50 Canonical Brief",
+        offerPct: 15,
+        validUntil: "2026-11-30",
+        approvedClaims: ["Broad Spectrum SPF 50 Mineral Protection", "Reef-friendly oxybenzone-free formula"],
+        prohibitedTerms: ["100% all-day waterproof", "Complete UV block"],
+        requiredQualifiers: ["Reapply every 2 hours."],
+      },
+    ],
+    packs: [
+      {
+        id: "pack_solarglow_01",
+        revision: 1,
+        caption: "Protect your glow this summer with SolarGlow SPF 50! 15% off with code GLOW15. Reapply every 2 hours. *On selected 100ml tubes.",
+        bannerName: "solarglow_summer_spf50_banner.png",
+        pdfText: "SolarGlow SPF 50 Spec Sheet: Mineral broad-spectrum formula. Valid through Nov 30.",
+        findings: [],
+        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        approval: {
+          id: "app_solarglow_01",
+          packId: "pack_solarglow_01",
+          packHash: "8a4f1bc3d2e5a6f7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+          contractVersion: 1,
+          reviewerName: "Rachel Gatekeeper",
+          reviewerRole: "REVIEWER",
+          notes: "All claims verified against legal guidelines. Zero discrepancies on Rev 1.",
+          isValid: true,
+          approvedAt: new Date(Date.now() - 86400000).toISOString(),
+        },
+      },
+    ],
+    members: [
+      {
+        id: "m_sg1",
+        campaignId: "camp_solarglow_02",
+        name: "David Kim",
+        email: "david@solarglow.com",
+        role: "BRAND_MANAGER",
+        joinedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+      },
+      {
+        id: "m_sg2",
+        campaignId: "camp_solarglow_02",
+        name: "Rachel Gatekeeper",
+        email: "rachel@agency.com",
+        role: "REVIEWER",
+        joinedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      },
+    ],
+    invites: [],
+    changeOrders: [],
+    auditLogs: [
+      {
+        id: "l_sg1",
+        actorName: "Rachel Gatekeeper",
+        actorRole: "REVIEWER",
+        action: "APPROVED",
+        detail: "Cryptographic SHA-256 seal bound at Rev 1 with zero violations.",
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ],
+  },
+  {
+    id: "camp_zenith_03",
+    title: "Zenith Aero Active ANC Earbuds",
+    product: "Zenith Aero ANC Earbuds Gen 2",
+    brand: "Zenith Audio Labs",
+    status: "NEEDS_REVIEW",
+    currentContractVersion: 2,
+    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    contracts: [
+      {
+        id: "ct_z_01",
+        version: 2,
+        title: "Zenith Aero Earbuds Gen 2 Launch Brief",
+        offerPct: 10,
+        validUntil: "2026-12-15",
+        approvedClaims: ["32 hours battery life with charging case", "Adaptive Active Noise Cancellation"],
+        prohibitedTerms: ["Guaranteed soundproof", "100% noise elimination"],
+        requiredQualifiers: ["Battery life varies with volume and ANC settings."],
+      },
+    ],
+    packs: [
+      {
+        id: "pack_zenith_01",
+        revision: 2,
+        caption: "Experience pure audio with Zenith Aero. 40 hours playtime. 100% noise elimination.",
+        bannerName: "zenith_aero_anc_banner.png",
+        pdfText: "Zenith Aero Gen 2 Specifications: 32 hours total playtime with wireless charging case.",
+        findings: [
+          {
+            id: "f_z1",
+            layer: "CROSS_ASSET",
+            status: "CONTRADICTED",
+            title: "Battery life mismatch",
+            description: "Caption claims 40 hours playtime, datasheet certifies 32 hours.",
+            suggestedFix: "Correct caption to 32 hours with charging case.",
+            resolution: "PENDING",
+          },
+          {
+            id: "f_z2",
+            layer: "BRAND_RULES",
+            status: "CONTRADICTED",
+            title: "Forbidden absolute superlative",
+            description: "'100% noise elimination' violates brand compliance guidelines.",
+            suggestedFix: "Change to 'Adaptive Active Noise Cancellation'.",
+            resolution: "PENDING",
+          },
+        ],
+        createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+      },
+    ],
+    members: [
+      {
+        id: "m_z1",
+        campaignId: "camp_zenith_03",
+        name: "Elena Rostova",
+        email: "elena@zenithaudio.com",
+        role: "BRAND_MANAGER",
+        joinedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
+      },
+      {
+        id: "m_z2",
+        campaignId: "camp_zenith_03",
+        name: "Marcus Vance",
+        email: "marcus@zenithaudio.com",
+        role: "CREATOR",
+        joinedAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+      },
+    ],
+    invites: [],
+    changeOrders: [
+      {
+        id: "co_zenith_02",
+        campaignId: "camp_zenith_03",
+        packId: "pack_zenith_01",
+        revision: 2,
+        assignedCreator: "Marcus Vance",
+        status: "OPEN",
+        designerNote: "Addressing battery claim clarification and removing absolute superlative.",
+        issues: [
+          {
+            id: "iss_z1",
+            findingId: "f_z1",
+            layer: "CROSS_ASSET",
+            location: "Social Caption",
+            issue: "Battery life mismatch (40h vs 32h)",
+            evidence: "Datasheet states 32 hours max with case.",
+            suggestedFix: "Change to 32 hours.",
+            box2d: null,
+            status: "OPEN",
+          },
+          {
+            id: "iss_z2",
+            findingId: "f_z2",
+            layer: "BRAND_RULES",
+            location: "Social Caption",
+            issue: "Forbidden superlative '100% noise elimination'",
+            evidence: "Brand rules prohibit absolute soundproofing claims.",
+            suggestedFix: "Use 'Adaptive Active Noise Cancellation'.",
+            box2d: null,
+            status: "OPEN",
+          },
+        ],
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      },
+    ],
+    auditLogs: [
+      {
+        id: "l_z1",
+        actorName: "CampaignGuard System",
+        actorRole: "SYSTEM",
+        action: "CHANGE_ORDER_CREATED",
+        detail: "Generated Change Order #co_zenith_02 with 2 open issues assigned to Marcus Vance.",
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      },
+    ],
+  },
+  {
+    id: "camp_aurora_04",
+    title: "Aurora Smart Ring Horizon Edition",
+    product: "Aurora Smart Ring Horizon Titanium",
+    brand: "Aurora Wellness",
+    status: "DRAFT",
+    currentContractVersion: 1,
+    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    contracts: [
+      {
+        id: "ct_a_01",
+        version: 1,
+        title: "Aurora Smart Ring Horizon Edition Pre-Order",
+        offerPct: 25,
+        validUntil: "2027-01-31",
+        approvedClaims: ["Medical-grade sleep staging and HRV tracking", "7-day battery life on single charge"],
+        prohibitedTerms: ["Diagnoses sleep apnea", "Clinical cure for insomnia"],
+        requiredQualifiers: ["Not an FDA-cleared diagnostic medical device."],
+      },
+    ],
+    packs: [],
+    members: [
+      {
+        id: "m_a1",
+        campaignId: "camp_aurora_04",
+        name: "Sarah Jenkins",
+        email: "sarah@auroraring.com",
+        role: "BRAND_MANAGER",
+        joinedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+    ],
+    invites: [],
+    changeOrders: [],
+    auditLogs: [
+      {
+        id: "l_a1",
+        actorName: "Sarah Jenkins",
+        actorRole: "BRAND_MANAGER",
+        action: "CONTRACT_CREATED",
+        detail: "Created Campaign Contract v1 for Aurora Smart Ring Pre-Order.",
+        createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+    ],
+  },
 ];
 
 const globalStore = globalThis as unknown as {
   _cg_campaigns: StoredCampaign[] | undefined;
 };
 
-if (!globalStore._cg_campaigns) {
+if (!globalStore._cg_campaigns || globalStore._cg_campaigns.length < INITIAL_CAMPAIGNS.length) {
   globalStore._cg_campaigns = JSON.parse(JSON.stringify(INITIAL_CAMPAIGNS));
 }
 
@@ -443,6 +680,9 @@ export const memoryStore = {
 
     const { invite, campaign } = found;
     if (invite.status !== "PENDING") return null;
+    if (new Date(invite.expiresAt).getTime() < Date.now()) {
+      return null;
+    }
 
     invite.status = "ACCEPTED";
 

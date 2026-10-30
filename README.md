@@ -12,8 +12,8 @@
 
 ## 📌 Submission Overview & Quick Links
 
-- **Live Deployed Application:** [https://campaign-guard.vercel.app](https://campaign-guard.vercel.app) *(Open to all judges)*
-- **Interactive Evaluation Blueprint:** [/demo-guide](https://campaign-guard.vercel.app/demo-guide) *(5-minute standalone judge walkthrough)*
+- **Live Deployed Application:** [https://cg.kshitijpro.xyz](https://cg.kshitijpro.xyz) *(Primary production deployment)*
+- **Interactive Evaluation Blueprint:** [https://cg.kshitijpro.xyz/demo-guide](https://cg.kshitijpro.xyz/demo-guide) *(5-minute standalone judge walkthrough)*
 - **Source Code Repository:** [GitHub Repository (KSHITIJadakane/CAMPAIGN_GUARD)](https://github.com/KSHITIJadakane/CAMPAIGN_GUARD)
 - **Official Finalist PDF Dossier:** [`CampaignGuard_Round3_Submission.pdf`](./CampaignGuard_Round3_Submission.pdf) *(or downloadable directly from `/CampaignGuard_Round3_Submission.pdf`)*
 
@@ -21,7 +21,7 @@
 
 ## 🎯 The Core Problem & Value Proposition
 
-In modern digital marketing, a single promotional campaign spans Instagram captions, display banners, PDF specifications, and email newsletters. Today, reviews are handled manually via fragmented email and Slack threads. Mismatched discounts (e.g. 30% on graphic vs. 20% in copy), prohibited health claims ("Miracle chill"), and missing legal qualifiers cost global retailers over $1.4B annually in regulatory fines and customer churn.
+In modern digital marketing, a single promotional campaign spans Instagram captions, display banners, PDF specifications, and email newsletters. Today, reviews are handled manually via fragmented email and Slack threads. Mismatched discounts (e.g. 30% on graphic vs. 20% in copy), prohibited health claims ("Miracle chill"), and missing legal qualifiers routinely trigger regulatory scrutiny, corrective reprint costs, and severe brand trust erosion.
 
 **CampaignGuard solves this deterministically.** Brand Managers establish a canonical *Truth Contract*. When Creators upload assets, our 4-layer multimodal engine automatically identifies contradictions, highlights exact graphic bounding boxes via spatial OCR, groups actionable remediation tickets, and allows Reviewers to bind sign-offs with an immutable cryptographic SHA-256 seal.
 
@@ -35,7 +35,8 @@ As committed at the conclusion of Round 2, all three production-grade engineerin
 - **Scoped Role Workspaces:** Strict separation of duties between **Brand Lead** (`BRAND_MANAGER`), **Creator** (`CREATOR`), and **Reviewer Gatekeeper** (`REVIEWER`).
   - Creators can only upload assets and address change orders; Truth Contracts and Cryptographic Locks are read-only.
   - Reviewers can sign approvals and verify audit logs; contract rules are protected.
-- **Tokenized Invite System:** Brand Managers generate cryptographically secure, 7-day tokenized invite links (`/invite?token=[token]`) for collaborating agency designers and legal gatekeepers.
+  - **Server-Side Enforcement:** `/api/packs/approve` strictly rejects non-Reviewer callers with HTTP `403 Forbidden`.
+- **Tokenized Invite System:** Brand Managers generate cryptographically secure, 7-day tokenized invite links (`/invite?token=[token]`) for collaborating agency designers and legal gatekeepers. Tokens are protected by expiration and revocation guards.
 - **Self-Service Onboarding:** The `/invite` acceptance portal validates token expiration, binds invited users to campaigns, and routes them directly to their role-specific workspace tab.
 - **Revocation & Audit Logging:** Brand Leads can inspect active invites, copy URLs, and revoke pending tokens in real time.
 
@@ -48,14 +49,14 @@ As committed at the conclusion of Round 2, all three production-grade engineerin
 ### 3. Cross-Campaign Governance Analytics Intelligence Dashboard
 - **Executive Intelligence Hub:** Accessible via the top navbar or `/dashboard?view=analytics`.
 - **5 Live Real-Time KPIs:**
-  1. *Total Campaigns Audited*
-  2. *Confirmed Violations Prevented*
-  3. *First-Pass Approval Rate (% clean on Revision 1)*
-  4. *Average Correction Rounds per Campaign*
-  5. *Cryptographically Sealed Asset Packs*
+  1. *Campaigns Audited:* Active briefs with executed preflight scans.
+  2. *Confirmed Violations:* Pre-publication contradictions caught across all active packs.
+  3. *First-Pass Approval Rate (%):* Percentage of assets approved at Rev 1 without revisions.
+  4. *Average Revision Rounds:* Mean correction cycles required to reach sign-off.
+  5. *Cryptographically Sealed Vault:* Approved SHA-256 version-locked packs.
 - **Categorical Violation Distribution:** Visual percentage breakdown across Facts, Cross-Asset Specs, Brand Rules, and Accessibility.
 - **Campaign Compliance Comparison Matrix:** Real-time table tracking revision count, contract versions, open issues, and approval statuses across all brands.
-- **Workflow Bottleneck Tracker:** Live queue monitor identifying whether campaigns are waiting on Creator revisions or Reviewer sign-offs, with calculated average wait durations.
+- **Workflow Bottleneck Tracker:** Live operational queue monitor tracking hours waiting on Creator revision vs Reviewer sign-offs (distinct from the 5 governance KPIs).
 
 ---
 
@@ -116,7 +117,7 @@ When an Authorised Reviewer signs off, the asset pack is frozen with this SHA-25
 
 ## 🧪 Comprehensive Verification & Test Suite
 
-CampaignGuard includes an automated, zero-latency regression test suite verifying all 7 API endpoints, compilation, and edge cases:
+CampaignGuard includes an automated regression test suite verifying all API endpoints, server-side RBAC guards, and edge cases:
 
 ```bash
 # 1. Type-check strictly (0 errors)
@@ -139,7 +140,17 @@ node scratch/test_round3_apis.js
 | **Team Invites API** | `POST /api/campaigns/[id]/invites` creates tokens with 7d expiration | ✅ `Passed` |
 | **Invite Acceptance API** | `POST /api/invites/[token]/accept` validates tokens and binds members | ✅ `Passed` |
 | **Creator Revision Flow** | `POST /api/packs/revision` executes re-analysis and marks 4/4 resolved | ✅ `Passed` |
+| **Server-Side RBAC Enforcement** | `POST /api/packs/approve` rejects unauthorized callers with `403 Forbidden` | ✅ `Passed` |
 | **Tamper Invalidation** | Out-of-band edits automatically revoke SHA-256 approval lock | ✅ `Passed` |
+| **Demo State Reset** | `POST /api/demo/reset` restores pristine benchmark state for fresh runs | ✅ `Passed` |
+
+---
+
+## 💾 Dual-Tier Persistence Architecture
+
+To guarantee zero setup friction and seamless evaluation for judges:
+- **Tier 1 — High-Fidelity In-Memory Benchmark Store:** Pre-seeded with 4 benchmark campaigns (`camp_ecosip_01`, `camp_solarglow_02`, `camp_zenith_03`, `camp_aurora_04`), live Change Orders, and audit trails. Allows instant interactive demonstration with zero database migration steps and zero cold-start latency.
+- **Tier 2 — Relational Schema (Prisma ORM):** Complete, typed SQLite / PostgreSQL schema (`prisma/schema.prisma`) modeling multi-tenant campaigns, role members, contracts, asset packs, and tamper-evident audit logs for durable enterprise deployments.
 
 ---
 
@@ -163,8 +174,9 @@ Create a `.env` file in the root directory (or use `.env.example`):
 ```env
 DATABASE_URL="file:./dev.db"
 GEMINI_API_KEY="your-google-gemini-api-key"
+GEMINI_MODEL="gemini-1.5-flash"
 ```
-*(Note: If `GEMINI_API_KEY` is omitted, the system operates seamlessly using its deterministic regex and heuristic verification fallback engines, ensuring 100% judge uptime).*
+*(Note: If `GEMINI_API_KEY` is omitted, the system operates deterministically using its rule-based verification fallback engine, ensuring high evaluation reliability even offline).*
 
 ### 3. Initialize Database & Build
 ```bash

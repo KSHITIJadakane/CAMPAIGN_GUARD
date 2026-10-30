@@ -30,11 +30,11 @@ CampaignGuard is architected as an end-to-end brand governance and visual prefli
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         PREFLIGHT ENGINE (Hybrid)                           │
 │  ┌─────────────────────────────────┐   ┌─────────────────────────────────┐  │
-│  │      DETERMINISTIC VERIFIER     │   │      GEMINI 3.8 FLASH VISION    │  │
+│  │      DETERMINISTIC VERIFIER     │   │      GEMINI 1.5 FLASH VISION    │  │
 │  │  • Regex math & numeric bounds  │   │  • Multimodal visual OCR        │  │
 │  │  • Expiration date validation   │   │  • Spatial box_2d extraction    │  │
 │  │  • Prohibited terms detector    │   │  • Cross-asset contradiction    │  │
-│  │  • Mandatory qualifier scanner  │   │  • Strict Zod Schema parsing    │  │
+│  │  • Mandatory qualifier scanner  │   │  • Strict JSON schema parsing   │  │
 │  └─────────────────────────────────┘   └─────────────────────────────────┘  │
 │                                      │                                      │
 │                                      ▼                                      │
@@ -50,9 +50,10 @@ CampaignGuard is architected as an end-to-end brand governance and visual prefli
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                     DATA & INTEGRITY TIER (Authoritative)                   │
-│  • Prisma ORM Relational Models (Campaign, Contract, Pack, Finding, Lock)   │
-│  • Edge-Compatible Seed & State Store (Zero-Latency Serverless Deployment)  │
-│  • Append-Only Immutable Audit Ledger                                       │
+│  • Dual Architecture:                                                       │
+│    - Rapid Evaluation: In-memory pre-seeded store for zero-setup demo tests │
+│    - Durable Deployment: Prisma ORM relational models (SQLite / PostgreSQL) │
+│  • Immutable Audit Trail with cryptographic SHA-256 asset hash binding      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -85,12 +86,12 @@ CampaignGuard is architected as an end-to-end brand governance and visual prefli
 
 ### Feature 3: Cross-Campaign Governance Analytics Dashboard
 - **Real-Time Aggregation Service (`src/lib/analytics.ts`):**
-  - **KPI 1: Audited Campaigns:** Counts campaigns with at least one executed preflight check.
-  - **KPI 2: Confirmed Violations:** Unique violations across active packs (excluding dismissed suggestions).
-  - **KPI 3: First-Pass Approval Rate:** $\frac{\text{Assets approved at Rev 1}}{\text{Total reviewed assets}} \times 100$.
-  - **KPI 4: Average Revision Cycles:** Mean correction rounds required across campaigns.
-  - **KPI 5: Cryptographically Sealed Vault:** Approved, tamper-proof campaigns.
-  - **Bottleneck Intelligence:** Analyzes active pending states to compute wait times by role (waiting on Creator revision vs Reviewer signoff).
+  - **KPI 1: Campaigns Audited:** Active campaigns with executed preflight audits.
+  - **KPI 2: Confirmed Violations:** Pre-publication contradictions caught across all active packs.
+  - **KPI 3: First-Pass Approval Rate (%):** Percentage of assets approved at Rev 1 without revisions.
+  - **KPI 4: Average Revision Cycles:** Mean correction rounds required to reach sign-off.
+  - **KPI 5: Cryptographically Sealed Vault:** Approved SHA-256 version-locked packs.
+  - **Bottleneck Intelligence:** Real-time workflow tracker computing wait times by role (waiting on Creator revision vs Reviewer signoff) — an operational tracker distinct from the 5 governance KPIs.
 
 ---
 
@@ -229,11 +230,12 @@ model AuditLog {
 | `POST` | `/api/campaigns` | Create a new campaign | Brand Manager |
 | `POST` | `/api/campaigns/[id]/invites` | Generate secure role-scoped invite link | Brand Manager |
 | `GET` | `/api/campaigns/[id]/invites` | View pending and accepted campaign invites | Brand Manager |
-| `POST` | `/api/invites/[token]/accept` | Accept campaign invitation and join workspace | Public / Invitee |
+| `POST` | `/api/invites/[token]/accept` | Accept campaign invitation and join workspace (7-day token expiry check, 410 if revoked/expired) | Public / Invitee |
 | `DELETE` | `/api/invites/[id]` | Revoke pending invitation | Brand Manager |
 | `POST` | `/api/contracts` | Author or update campaign contract version | Brand Manager |
 | `POST` | `/api/packs/check` | Submit asset pack and trigger 4-layer preflight | Creator |
 | `POST` | `/api/packs/revision` | Submit revised creative (Rev 2) for Change Order | Creator |
-| `POST` | `/api/packs/approve` | Execute SHA-256 cryptographic revision lock | Reviewer |
+| `POST` | `/api/packs/approve` | Execute SHA-256 cryptographic revision lock | Reviewer (Enforced server-side: returns `403 Forbidden` if caller role != `REVIEWER`) |
 | `PATCH` | `/api/findings/[id]/resolve` | Accept or escalate individual finding | Creator / Reviewer |
 | `GET` | `/api/analytics` | Fetch real-time cross-campaign governance metrics | Brand Manager |
+| `POST` | `/api/demo/reset` | Reset demo campaign to pristine Rev 1 state for clean evaluations | All Roles / Evaluation |

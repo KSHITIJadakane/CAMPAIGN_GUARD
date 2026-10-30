@@ -31,7 +31,7 @@ export async function GET() {
       });
 
       if (campaigns && campaigns.length > 0) {
-        const enriched = campaigns.map((c) => {
+        const enriched: any[] = campaigns.map((c) => {
           const mem = memoryStore.getCampaign(c.id);
           return {
             ...c,
@@ -40,6 +40,16 @@ export async function GET() {
             changeOrders: mem?.changeOrders || [],
           };
         });
+
+        // Ensure all benchmark campaigns from memoryStore are available
+        const memCampaigns = memoryStore.getCampaigns();
+        const existingIds = new Set(enriched.map((e) => e.id));
+        for (const mc of memCampaigns) {
+          if (!existingIds.has(mc.id)) {
+            enriched.push(mc);
+          }
+        }
+
         return NextResponse.json({ success: true, campaigns: enriched });
       }
     } catch (dbErr) {

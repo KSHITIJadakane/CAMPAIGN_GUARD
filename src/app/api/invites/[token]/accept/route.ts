@@ -18,6 +18,27 @@ export async function GET(
 
     const { invite, campaign } = found;
 
+    if (invite.status === "REVOKED") {
+      return NextResponse.json(
+        { error: "This invitation token has been revoked by the campaign administrator." },
+        { status: 410 }
+      );
+    }
+
+    if (invite.status === "ACCEPTED") {
+      return NextResponse.json(
+        { error: "This invitation token has already been accepted and cannot be reused." },
+        { status: 409 }
+      );
+    }
+
+    if (new Date(invite.expiresAt).getTime() < Date.now()) {
+      return NextResponse.json(
+        { error: "This invitation token has expired (7-day validity window exceeded)." },
+        { status: 410 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -48,6 +69,36 @@ export async function POST(
     const token = params.token;
     const body = await req.json().catch(() => ({}));
     const userName = body.userName || "Invited Collaborator";
+
+    const found = memoryStore.getInviteByToken(token);
+    if (!found) {
+      return NextResponse.json(
+        { error: "Invitation token not found or invalid." },
+        { status: 404 }
+      );
+    }
+
+    const { invite } = found;
+    if (invite.status === "REVOKED") {
+      return NextResponse.json(
+        { error: "Invitation token was revoked by the campaign administrator." },
+        { status: 410 }
+      );
+    }
+
+    if (invite.status === "ACCEPTED") {
+      return NextResponse.json(
+        { error: "Invitation token has already been accepted and cannot be reused." },
+        { status: 409 }
+      );
+    }
+
+    if (new Date(invite.expiresAt).getTime() < Date.now()) {
+      return NextResponse.json(
+        { error: "Invitation token has expired (7-day validity limit exceeded)." },
+        { status: 410 }
+      );
+    }
 
     const result = memoryStore.acceptInvite(token, userName);
 
