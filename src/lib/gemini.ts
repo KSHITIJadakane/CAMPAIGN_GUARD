@@ -30,7 +30,7 @@ export async function runGeminiInspection(input: PreflightInspectionInput): Prom
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const contractSummary = `
 PRODUCT: ${input.contract.product}
@@ -58,7 +58,10 @@ CRITICAL RULES:
    - CROSS_ASSET: Compare Caption vs Banner vs PDF for conflicting claims.
    - BRAND_RULES: Check prohibited superlatives, required disclaimers, brand tone.
    - ACCESSIBILITY: Basic visual clarity, readable contrast, alt-text requirement.
-3. Return ONLY a valid JSON array of findings with this exact schema:
+3. VISUAL COORDINATES (FEATURE 2):
+   If an issue is visible on the Banner Image, provide normalized bounding box coordinates [ymin, xmin, ymax, xmax] scaled 0 to 1000.
+   If not on banner or uncertain, set "box2d" to null.
+4. Return ONLY a valid JSON array of findings with this exact schema:
 [
   {
     "layer": "FACTS" | "CROSS_ASSET" | "BRAND_RULES" | "ACCESSIBILITY",
@@ -66,7 +69,8 @@ CRITICAL RULES:
     "issue": "Short summary of contradiction or rule violation",
     "evidence": "Exact contract rule vs extracted asset statement",
     "suggestedFix": "Minimal actionable text/visual correction",
-    "status": "CONTRADICTED" | "INSUFFICIENT_EVIDENCE" | "SUPPORTED"
+    "status": "CONTRADICTED" | "INSUFFICIENT_EVIDENCE" | "SUPPORTED",
+    "box2d": [ymin, xmin, ymax, xmax] | null
   }
 ]
 
@@ -112,19 +116,36 @@ ${input.bannerBase64 ? `(Banner attached as image: ${input.bannerName || "banner
 
     const parsed = JSON.parse(jsonMatch[0]);
     if (Array.isArray(parsed)) {
-      return parsed.map((item: any) => ({
-        layer: ["FACTS", "CROSS_ASSET", "BRAND_RULES", "ACCESSIBILITY"].includes(item.layer)
-          ? item.layer
-          : "BRAND_RULES",
-        location: String(item.location || "Asset"),
-        issue: String(item.issue || "Issue detected"),
-        evidence: String(item.evidence || "Violation of campaign contract specifications"),
-        suggestedFix: String(item.suggestedFix || "Revise content to match contract"),
-        status: ["CONTRADICTED", "INSUFFICIENT_EVIDENCE", "SUPPORTED"].includes(item.status)
-          ? item.status
-          : "CONTRADICTED",
-        resolution: "PENDING",
-      }));
+      return parsed.map((item: any) => {
+        let box2d: [number, number, number, number] | null = null;
+        if (
+          Array.isArray(item.box2d) &&
+          item.box2d.length === 4 &&
+          item.box2d.every((n: any) => typeof n === "number" && !isNaN(n) && n >= 0 && n <= 1000)
+        ) {
+          box2d = [
+            Math.max(0, Math.min(1000, item.box2d[0])),
+            Math.max(0, Math.min(1000, item.box2d[1])),
+            Math.max(0, Math.min(1000, item.box2d[2])),
+            Math.max(0, Math.min(1000, item.box2d[3])),
+          ];
+        }
+
+        return {
+          layer: ["FACTS", "CROSS_ASSET", "BRAND_RULES", "ACCESSIBILITY"].includes(item.layer)
+            ? item.layer
+            : "BRAND_RULES",
+          location: String(item.location || "Asset"),
+          issue: String(item.issue || "Issue detected"),
+          evidence: String(item.evidence || "Violation of campaign contract specifications"),
+          suggestedFix: String(item.suggestedFix || "Revise content to match contract"),
+          status: ["CONTRADICTED", "INSUFFICIENT_EVIDENCE", "SUPPORTED"].includes(item.status)
+            ? item.status
+            : "CONTRADICTED",
+          resolution: "PENDING",
+          box2d,
+        };
+      });
     }
 
     return [];

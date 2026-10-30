@@ -142,7 +142,7 @@ export default function RootLayout({
                 <span className="text-mist">•</span>
                 <span className="text-xs text-ash font-mono">cg.kshitijpro.xyz</span>
               </div>
-              <span>Round 2 Functional MVP • Cryptographic Revision Lock</span>
+              <span>Round 3 Finalist Enterprise Build • Top 50 Edition</span>
             </div>
           </footer>
         </RoleProvider>

@@ -1,117 +1,91 @@
 # PRD.md — CampaignGuard
-> Project Requirements Document | Round 2 Hackathon Build
+> Project Requirements Document | Round 3 Finalist Enterprise Build (Top 50)
 
 ---
 
 ## 1. Problem Statement
 
-Marketing teams publish campaigns across multiple assets (captions, banners, PDFs) created by different people. Contradictions slip through unnoticed:
-- Caption says **20% off**, banner says **30% off**
-- Product sheet says **"up to 12 hours cold"**, ad promises **"24 hours guaranteed"**
-- Missing required disclaimers, outdated logos, prohibited language
+Marketing teams publish campaigns across multiple channels and formats (captions, display banners, technical PDFs) created by distributed creators, external agencies, and generative AI tools. High-risk contradictions slip through undetected:
+- Social caption promises **20% off**, banner visual advertises **30% off**.
+- Technical product sheet supports **"up to 12 hours cold retention"**, promotional ad asserts **"24 hours guaranteed chill"**.
+- Missing mandatory regulatory qualifiers (e.g. *"On selected models only"*, *"While stocks last"*).
+- Prohibited superlatives and unauthorized medical/legal claims slip through manual reviews.
 
-Manual review = scattered Slack messages. No audit trail. No version control. Damage happens after publication.
-
----
-
-## 2. Solution
-
-**CampaignGuard** — an automated pre-publication preflight checker for marketing campaigns.
-
-A Brand Manager defines a **Campaign Contract** (the single source of truth for one campaign). A Creator submits their assets. The system runs automated multi-layer checks and returns structured findings. A Reviewer approves the exact locked revision. Any edit afterward invalidates the approval.
+Manual review across scattered chat threads and emails lacks auditability, cannot detect cross-asset mathematical discrepancies, and provides no tamper-proof guarantee that published assets match the brief.
 
 ---
 
-## 3. Target Users
+## 2. Product Solution & Round 3 Scope
 
-| Role | Who | What They Need |
-|------|-----|----------------|
-| Brand Manager | Marketing lead / agency director | Define campaign rules once; ensure variants are intentional |
-| Creator | Copywriter / designer | Fast, specific, fixable feedback before submitting |
-| Reviewer | Senior approver | Approve the exact final version with evidence, not memory |
+**CampaignGuard** is an automated pre-publication preflight review and governance engine for brand campaigns.
 
-> For the MVP demo: one demo account per role, selectable from the landing page. No real authentication complexity.
+A Brand Manager defines a **Campaign Contract** (the canonical brief and rulebook). Collaborators are invited via secure, role-scoped invitation links. When Creators submit multi-format assets (captions, banners, documents), CampaignGuard executes a 4-layer inspection, overlays visual bounding-box annotations onto graphics, groups findings into actionable **Change Orders**, tracks revision cycles, and seals approved assets with a **SHA-256 cryptographic revision lock**. A live **Governance Analytics Dashboard** provides real-time operational intelligence across all campaigns.
 
 ---
 
-## 4. Core Concepts
+## 3. User Roles & Permission Model
 
-### Campaign Contract
+| Role | Permissions & Scope | Key Workflows |
+|:---|:---|:---|
+| **Brand Manager** | Full campaign authority. Campaign creation, contract authoring, inviting team members, monitoring cross-campaign governance analytics, assigning change orders. | Sets canonical brief, issues invite links, oversees audit trail, inspects systemic compliance trends. |
+| **Creator** | Scoped to invited campaigns. View creative assets, inspect visual bounding-box annotations, review assigned Change Orders, upload revised asset revisions (v2+), submit designer correction notes. | Uploads draft creatives, reviews visual feedback, remedies contradictions, submits revised assets for re-analysis. Cannot edit contracts or sign approvals. |
+| **Reviewer** | Scoped to assigned campaigns. Reviews preflight findings, verifies resolved vs remaining issues on revised assets, inspects cryptographic hashes, executes version-lock approval or requests further correction. | Verifies remediation evidence, signs cryptographic seal. Cannot silently modify contract terms or creator assets. |
+
+---
+
+## 4. Core System Concepts
+
+### 1. Campaign Contract (Single Source of Truth)
 A structured, human-approved brief containing:
-- Campaign name, product, market, channel, audience
-- Offer percentage, eligibility clause, end date
-- Approved product claims (e.g. "Keeps drinks cold for up to 12 hours")
-- Required qualifiers (e.g. "On selected bottles")
-- Prohibited terms (e.g. "miracle", "guaranteed", "world's best")
-- Channel-specific variants (e.g. VIP email = 30%, Instagram = 20%)
+- Campaign identity: Title, brand, product, channel, target audience, market.
+- Commercial facts: Offer percentage, eligibility conditions, expiration date.
+- Approved claims repository: Verified technical claims with citation requirement.
+- Prohibited terms dictionary: Forbidden superlatives, banned claims.
+- Required qualifiers: Mandatory legal and regulatory disclaimers.
+- Channel variants: Approved exceptions per channel (e.g. VIP loyalty tiers).
 
-### Campaign Pack
-Assets submitted by the Creator for preflight check:
-- Caption text (plain text input)
-- Banner image (PNG/JPEG upload)
-- Optional PDF document (text-based)
+### 2. Multi-Role Collaboration & Secure Invites (Round 3 Feature 1)
+- Cryptographic invite tokens generated by Brand Managers.
+- Scoped to a specific campaign and role (`CREATOR` or `REVIEWER`).
+- Dedicated `/invite?token=...` acceptance flow.
+- Server-enforced authorization preventing unauthorized contract tampering or approval bypass.
+- Quick Judge Switcher for zero-friction evaluation.
 
-### Preflight Check (4 Layers)
-1. **Campaign Facts** — Discount %, dates, eligibility match contract (deterministic)
-2. **Cross-Asset Consistency** — Caption vs. image vs. PDF agree with each other
-3. **Brand Rules** — Prohibited terms, required qualifiers, tone
-4. **Accessibility** — Basic contrast flag, alt-text presence
+### 3. Visual OCR & Evidence-Linked Change Orders (Round 3 Feature 2)
+- Gemini multimodal vision extracts normalized bounding boxes `[ymin, xmin, ymax, xmax]` for text contradictions on images.
+- Interactive SVG/Canvas overlay highlights issues directly on the uploaded graphic.
+- Findings grouped into a formal **Change Order Ticket** linked to asset version.
+- Creator submits Revision v2 with correction notes.
+- Automated re-analysis compares v2 against v1: marks issues as `RESOLVED`, `STILL_PRESENT`, or `NEEDS_HUMAN_REVIEW`.
 
-### Finding
-Each detected issue returns:
-- location — which asset (caption / banner / PDF)
-- issue — what is wrong
-- evidence — contract clause violated + extracted text
-- suggested_fix — minimal correction
-- status — CONTRADICTED | INSUFFICIENT_EVIDENCE | SUPPORTED
+### 4. 4-Layer Preflight Inspection
+1. **Facts & Mathematics:** Discount percentage, numeric limits, expiration dates, eligibility matching (deterministic regex + bounds).
+2. **Cross-Asset Consistency:** Caption text vs visual banner OCR vs PDF extract claim consistency.
+3. **Brand & Regulatory Rules:** Prohibited superlatives, mandatory disclaimers, brand tone validation.
+4. **Visual Accessibility:** Contrast flags, font legibility, alt-text presence.
 
-### Approval & Invalidation
-- Approval is bound to a specific revision hash + contract version
-- Editing any asset after approval resets status to INVALIDATED and triggers re-review
-- Every approval writes a permanent audit record
+### 5. Cryptographic Revision Lock & Post-Approval Invalidation
+- Reviewer approval executes a SHA-256 hash across canonical JSON of all asset bytes and contract specifications.
+- Approval binds asset revision $N$ to contract version $M$.
+- Any subsequent edit automatically recalculates the SHA-256 hash, revokes approval, transitions status to `INVALIDATED`, and logs the drift to the immutable audit ledger.
 
----
-
-## 5. Features
-
-### Must Ship (Core Workflow)
-- Landing page with role-select demo login
-- Campaign Contract creation form (Brand Manager)
-- Campaign Pack submission: image + caption + PDF upload (Creator)
-- AI-powered preflight check engine (4 layers)
-- Structured findings report with accept / escalate actions
-- Reviewer approval with revision lock
-- Approval invalidation on edit
-- Audit trail per campaign
-
-### Should Ship (Polish)
-- Dashboard with all campaigns and status badges
-- Campaign Contract versioning display
-- Revision history per campaign pack
-- Repeated-issue summary (simple governance insight)
-- Responsive design
-
-### Explicitly Deferred
-- Real multi-org authentication
-- Video/audio asset checks
-- Real file storage
-- Automatic image redesign
-- Legal compliance certification
-- Enterprise integrations
+### 6. Cross-Campaign Governance Analytics (Round 3 Feature 3)
+- Real-time operational intelligence dashboard for Brand Managers (`/dashboard` analytics tab).
+- 5 Live KPI Cards: Campaigns Audited, Confirmed Violations, First-Pass Approval Rate (%), Average Revision Rounds, Cryptographically Sealed Vault.
+- Dynamic visual charts: Violations by Category, Campaign Compliance Matrix, Workflow Bottleneck Tracker (waiting on Creator vs Reviewer).
+- Real aggregation from active state — zero fabricated statistics.
 
 ---
 
-## 6. Round 3 Improvements
-1. **Brand Profile Library** — Reusable brand rules across campaigns
-2. **Slack / Notion Integration** — Push findings into team workflows
-3. **Governance Analytics Dashboard** — Track rule violations over time
+## 5. Feature Status & Verification Matrix
 
----
-
-## 7. Success Criteria for Judges
-- Judge opens deployed link with no guidance needed
-- Can create a Campaign Contract as Brand Manager
-- Can submit a campaign pack as Creator and see findings
-- Can approve as Reviewer
-- Can edit an asset and see approval invalidated
-- No broken pages or crashing errors
+| Component | Round 2 Baseline | Round 3 Finalist Addition | Verification Status |
+|:---|:---|:---|:---|
+| **Campaign Contracts** | Versioned Contract Builder with claims, qualifiers, and channel variants. | Integrated with team role boundaries and revision invalidation. | Operational ✅ |
+| **Preflight Engine** | Hybrid deterministic TypeScript + Gemini multimodal inspection. | Gemini spatial bounding-box extraction `[ymin, xmin, ymax, xmax]`. | Operational ✅ |
+| **Visual OCR & Annotations** | Text findings list with contract evidence and suggested fixes. | Interactive graphic overlay with bidirectional finding-highlight binding. | Round 3 Core ✅ |
+| **Change Order Workflow** | 1-Click fix acceptance for copy. | Grouped Change Order tickets, Creator Revision v2 upload, re-analysis resolution diffing. | Round 3 Core ✅ |
+| **Collaboration & RBAC** | Local client-side persona switcher. | Tokenized shareable invite links, `/invite` route, campaign-scoped memberships. | Round 3 Core ✅ |
+| **Governance Analytics** | Isolated per-campaign findings. | Cross-campaign analytics dashboard, 5 live KPIs, bottleneck intelligence, dynamic charts. | Round 3 Core ✅ |
+| **Cryptographic Lock** | SHA-256 hash seal with post-approval edit invalidation. | Enhanced with asset versioning and audit trail attribution. | Operational ✅ |
+| **Zero-Setup Usability** | Pre-seeded EcoSip benchmark with 4 intentional contradictions. | Unified judge experience supporting both 1-click persona testing and real invite links. | Operational ✅ |

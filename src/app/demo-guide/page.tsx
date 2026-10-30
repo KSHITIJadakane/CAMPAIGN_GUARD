@@ -19,14 +19,35 @@ export default function DemoGuidePage() {
       {/* Guide Header */}
       <div className="space-y-3 border-b border-mist pb-6">
         <span className="text-[11px] font-mono uppercase tracking-widest text-ash">
-          Round 2 Hackathon Demonstration & Judging Blueprint
+          Round 3 Finalist Hackathon Demonstration & Judging Blueprint
         </span>
         <h1 className="font-serif text-4xl text-ink font-normal">
-          How to Test & Evaluate CampaignGuard
+          How to Test & Evaluate CampaignGuard (Top 50 Finalist Edition)
         </h1>
         <p className="text-[15px] text-charcoal font-sans leading-relaxed">
-          Welcome Judges. This guide walks you through the 5 critical verification steps to validate the complete end-to-end workflow, architectural integrity, and cryptographic locking mechanism.
+          Welcome Judges. This guide demonstrates the complete enterprise brand-governance system and verifies the three major capabilities delivered in Round 3: Multi-Role Access Control with Tokenized Invite Links, Visual OCR with Auto-Annotated Change Orders, and Cross-Campaign Governance Analytics.
         </p>
+
+        {/* Official Round 3 PDF Download Banner */}
+        <div className="p-4 bg-linen/80 rounded-2xl border border-signal-blue/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-signal-blue font-bold block">
+              Official Round 3 Submission Dossier
+            </span>
+            <p className="text-xs text-charcoal font-medium leading-relaxed">
+              Read the complete 8-page <strong>Round 3 Engineering Dossier (PDF)</strong> detailing RBAC architecture, Gemini multimodal spatial bounding box extraction, live analytics formulas, and test matrices.
+            </p>
+          </div>
+          <a
+            href="/CampaignGuard_Round3_Submission.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 bg-twilight hover:bg-ink text-paper text-xs font-mono font-medium rounded-xl transition-all shadow-xs shrink-0 inline-flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <span>Download PDF Dossier (8 Pages)</span>
+            <ArrowRight className="w-3.5 h-3.5 text-signal-blue" />
+          </a>
+        </div>
       </div>
 
       {/* 5-Step Evaluation Sequence */}
@@ -37,87 +58,90 @@ export default function DemoGuidePage() {
           {/* Step 1 */}
           <div className="p-5 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 1 • Explore Pre-Seeded Truth & Contradictions</span>
+              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 1 • Explore Pre-Seeded Truth & Visual Contradictions</span>
               <span className="text-[11px] font-mono text-ash">0:00 - 1:00</span>
             </div>
             <p className="text-[13px] text-charcoal font-sans leading-relaxed">
-              Open the <strong>Campaign Workspace</strong>. The sample campaign <span className="font-semibold text-ink">"EcoSip Weekend Flash Sale"</span> is pre-loaded with Contract v1 (20% off, 12hr cold claim, forbidden words: Miracle, guaranteed). Review the <strong>Preflight Inspection Findings</strong> tab to see how the system flagged 4 contradictions across Campaign Facts, Brand Rules, and Cross-Asset Consistency.
+              Open the <strong>Campaign Workspace</strong>. The benchmark campaign <span className="font-semibold text-ink">"EcoSip Weekend Flash Sale"</span> is pre-loaded with Contract v1 (20% off, 12hr cold claim, forbidden words: Miracle, guaranteed). Review the <strong>Preflight Inspection Findings</strong> tab to inspect the interactive SVG bounding box overlays highlighting violations directly on the banner visual alongside structured contract citations.
             </p>
           </div>
 
           {/* Step 2 */}
           <div className="p-5 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 2 • Switch to Creator & Run Preflight</span>
+              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 2 • Test Multi-Role Invite Links & RBAC (Feature 1)</span>
               <span className="text-[11px] font-mono text-ash">1:00 - 2:00</span>
             </div>
             <p className="text-[13px] text-charcoal font-sans leading-relaxed">
-              Switch the role pill in the navigation bar to <strong>Creator</strong> (Alex Chen). Navigate to the <strong>Creator Pack Uploader</strong> tab. Edit the caption or click <span className="font-semibold text-signal-blue">"Run Preflight Inspection"</span>. Watch the live 4-layer inspection pipeline scan facts, cross-reconcile text, and compute a new SHA-256 payload hash in real-time.
+              As <strong>Brand Manager</strong>, open <strong>Team & Invites</strong>. Generate a real tokenized invite link for a <strong>Creator</strong> or <strong>Reviewer</strong>. Test opening the link in a new tab to see the custom invitation acceptance flow at <code>/invite</code>. Notice how permissions are scoped: Creators cannot alter contracts or sign approvals; Reviewers cannot silently edit creator assets.
             </p>
           </div>
 
           {/* Step 3 */}
           <div className="p-5 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 3 • Accept Suggested Corrections</span>
+              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 3 • Change Order Workflow & Revision v2 (Feature 2)</span>
               <span className="text-[11px] font-mono text-ash">2:00 - 3:00</span>
             </div>
             <p className="text-[13px] text-charcoal font-sans leading-relaxed">
-              In the <strong>Preflight Inspection Findings</strong> tab, examine the ground truth evidence boxes. Click <span className="font-semibold text-signal-blue">"Accept Suggested Fix"</span> on a finding. Notice how the issue state updates cleanly to resolved and immediately records an entry in the permanent <strong>Audit Trail</strong>.
+              Switch role to <strong>Creator</strong> (Alex Chen). Inspect the grouped <strong>Change Order Ticket</strong> for Banner Rev 1. Upload a revised asset or submit a correction note. Watch the automated re-analysis engine compare findings against the previous Change Order to track resolved vs. still-present issues in real time.
             </p>
           </div>
 
           {/* Step 4 */}
           <div className="p-5 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 4 • Switch to Reviewer & Execute Cryptographic Lock</span>
+              <span className="font-mono text-[12px] font-semibold text-twilight">STEP 4 • Reviewer Verification & Cryptographic Version Lock</span>
               <span className="text-[11px] font-mono text-ash">3:00 - 4:00</span>
             </div>
             <p className="text-[13px] text-charcoal font-sans leading-relaxed">
-              Switch role to <strong>Reviewer</strong> (Marcus Vance). Navigate to the <strong>Authorised Review & Lock</strong> tab. Inspect the Lock Architecture State diagram showing Contract version bound to Asset Revision Hash. Click <span className="font-semibold text-twilight">"Execute Cryptographic Approval"</span>. The campaign status changes to <span className="text-status-pass font-semibold">Approved & Locked</span>.
+              Switch role to <strong>Reviewer</strong> (Marcus Vance). Navigate to <strong>Authorised Review & Lock</strong>. Inspect the SHA-256 payload hash binding the exact asset revision to the active contract version. Click <span className="font-semibold text-twilight">"Execute Cryptographic Approval"</span>. If any asset is edited afterward, observe instant invalidation and drift detection!
             </p>
           </div>
 
           {/* Step 5 */}
           <div className="p-5 bg-paper rounded-2xl border border-mist shadow-subtle-card space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[12px] font-semibold text-status-error">STEP 5 • Test Instant Invalidation (The Signature Innovation)</span>
+              <span className="font-mono text-[12px] font-semibold text-signal-blue">STEP 5 • Inspect Cross-Campaign Governance Analytics (Feature 3)</span>
               <span className="text-[11px] font-mono text-ash">4:00 - 5:00</span>
             </div>
             <p className="text-[13px] text-charcoal font-sans leading-relaxed">
-              Switch back to Creator or Brand Manager. Change a single word in the caption (e.g. change 20% to 25%) and run inspection, OR edit the Contract discount. Observe how the campaign status instantly resets from Approved to <span className="text-status-error font-semibold">Approval Invalidated</span> with a red banner, preventing accidental publication of unreviewed modifications!
+              Open the <strong>Governance Analytics</strong> tab in the navigation bar. Inspect the 5 live operational KPI cards (Total Audited, Confirmed Violations, First-Pass Approval Rate, Average Revision Rounds, Sealed Campaigns). Explore the category violation breakdown and real-time workflow bottleneck tracker showing pending items by role.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Round 2 Submission Disclosures */}
+      {/* Round 3 Submission Disclosures */}
       <section className="p-6 bg-linen rounded-2xl border border-mist space-y-6">
-        <h2 className="font-serif text-2xl text-ink font-normal">Round 2 Required Disclosures</h2>
+        <h2 className="font-serif text-2xl text-ink font-normal">Round 3 Delivered Improvements</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px] font-sans">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[13px] font-sans">
           <div className="p-4 bg-paper rounded-xl border border-mist/80 space-y-2">
             <h4 className="font-mono font-semibold text-twilight uppercase text-[12px]">
-              Technology & AI Architecture
+              1. Multi-Role RBAC & Invites
             </h4>
-            <ul className="space-y-1.5 text-charcoal list-disc pl-4">
-              <li><strong>Frontend & API:</strong> Next.js 14 App Router, TypeScript, Tailwind CSS</li>
-              <li><strong>Database:</strong> Prisma ORM with SQLite (local) / PostgreSQL (Neon serverless on Vercel)</li>
-              <li><strong>AI Engine:</strong> Google Gemini 1.5 Flash multimodal vision API for cross-asset reasoning</li>
-              <li><strong>Deterministic Layer:</strong> Exact SQL/Regex rules for hard dates and discounts (zero hallucinations)</li>
-              <li><strong>Security:</strong> SHA-256 cryptographic revision binding</li>
-            </ul>
+            <p className="text-charcoal leading-relaxed text-[12px]">
+              Brand Managers issue cryptographically random invite tokens bound to specific roles and campaigns. Complete dedicated <code>/invite</code> acceptance portal with strict server-side permission gating.
+            </p>
           </div>
 
           <div className="p-4 bg-paper rounded-xl border border-mist/80 space-y-2">
             <h4 className="font-mono font-semibold text-twilight uppercase text-[12px]">
-              3 Major Round 3 Improvements
+              2. Visual OCR & Change Orders
             </h4>
-            <ul className="space-y-1.5 text-charcoal list-disc pl-4">
-              <li><strong>1. Reusable Brand Profile Vault:</strong> Universal brand guidelines, logos, and prohibited lexicons imported once and inherited across all future campaigns.</li>
-              <li><strong>2. Real-Time Slack & Notion Webhooks:</strong> Push automated preflight findings and one-click reviewer approvals directly into team chat workflows.</li>
-              <li><strong>3. Governance Analytics Engine:</strong> Macro intelligence dashboard reporting recurring rule violations, chronic channel errors, and risk hot-spots across creators.</li>
-            </ul>
+            <p className="text-charcoal leading-relaxed text-[12px]">
+              Gemini spatial coordinate extraction (<code>box_2d</code>) with responsive SVG overlays. Grouped Change Order tickets for creators with Revision v2 upload and re-analysis diffing.
+            </p>
+          </div>
+
+          <div className="p-4 bg-paper rounded-xl border border-mist/80 space-y-2">
+            <h4 className="font-mono font-semibold text-twilight uppercase text-[12px]">
+              3. Governance Analytics
+            </h4>
+            <p className="text-charcoal leading-relaxed text-[12px]">
+              Cross-campaign operational dashboard aggregating real active state. 5 KPI metrics, category violation distribution, and live workflow bottleneck monitoring by team role.
+            </p>
           </div>
         </div>
       </section>

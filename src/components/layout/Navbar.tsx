@@ -51,6 +51,13 @@ export function Navbar() {
             Campaigns
           </Link>
           <Link
+            href="/dashboard?view=analytics"
+            className="px-3 py-1.5 rounded-lg transition-colors hover:text-ink hover:bg-linen/60 flex items-center gap-1"
+          >
+            <span>Governance Analytics</span>
+            <span className="px-1.5 py-0.2 bg-signal-blue/10 text-signal-blue text-[9px] font-mono rounded font-semibold">R3</span>
+          </Link>
+          <Link
             href="/demo-guide"
             className={`px-3 py-1.5 rounded-lg transition-colors ${
               pathname === "/demo-guide" ? "bg-linen text-ink font-semibold" : "hover:text-ink hover:bg-linen/60"
@@ -58,6 +65,16 @@ export function Navbar() {
           >
             Judge Guide
           </Link>
+          <a
+            href="/CampaignGuard_Round3_Submission.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 rounded-lg border border-signal-blue/40 bg-signal-blue/10 hover:bg-signal-blue/20 text-signal-blue transition-colors text-[11px] font-mono font-semibold flex items-center gap-1 shadow-xs"
+            title="Download the official 8-page Round 3 Finalist Submission Dossier (PDF)"
+          >
+            <span>R3 Dossier (PDF)</span>
+            <span className="text-[9px]">↗</span>
+          </a>
         </div>
 
         {/* Right Controls */}
@@ -186,6 +203,14 @@ export function Navbar() {
               <ArrowRight className="w-3.5 h-3.5 text-ash" />
             </Link>
             <Link
+              href="/dashboard?view=analytics"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 rounded-xl transition-colors flex items-center justify-between text-charcoal hover:bg-linen/60"
+            >
+              <span>Governance Analytics (Round 3)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-ash" />
+            </Link>
+            <Link
               href="/demo-guide"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2.5 rounded-xl transition-colors flex items-center justify-between ${
@@ -195,6 +220,16 @@ export function Navbar() {
               <span>Judge Demonstration Guide</span>
               <ArrowRight className="w-3.5 h-3.5 text-ash" />
             </Link>
+            <a
+              href="/CampaignGuard_Round3_Submission.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 rounded-xl transition-colors flex items-center justify-between text-signal-blue bg-signal-blue/5 hover:bg-signal-blue/10 border border-signal-blue/20 font-mono text-xs font-semibold"
+            >
+              <span>Download Round 3 Finalist PDF (8 Pages)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-signal-blue" />
+            </a>
           </div>
         </div>
       )}

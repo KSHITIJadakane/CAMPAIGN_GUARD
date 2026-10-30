@@ -10,10 +10,14 @@ import {
   ArrowRight,
   ShieldAlert,
   Check,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  FileCheck2
 } from "lucide-react";
 import { CheckLayer, FindingItem } from "@/types";
 import { useRole } from "@/components/layout/RoleContext";
+import { AnnotatedCreativeViewer } from "./AnnotatedCreativeViewer";
+import { ChangeOrderPanel } from "./ChangeOrderPanel";
 
 interface FindingsReportProps {
   campaign: any;
@@ -23,7 +27,7 @@ interface FindingsReportProps {
 }
 
 export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUpload }: FindingsReportProps) {
-  const { currentUser } = useRole();
+  const { currentUser, currentRole } = useRole();
   const latestPack = campaign?.packs?.[0];
   const findings: FindingItem[] = latestPack?.findings || [];
   const pendingFindings = findings.filter((f) => f.resolution === "PENDING");
@@ -31,6 +35,7 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
 
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [isBatchResolving, setIsBatchResolving] = useState(false);
+  const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
 
   // Group counts by layer
   const layers: CheckLayer[] = ["FACTS", "CROSS_ASSET", "BRAND_RULES", "ACCESSIBILITY"];
@@ -196,12 +201,36 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
         })}
       </div>
 
+      {/* ROUND 3 FEATURE 2: VISUAL OCR ANNOTATED VIEWER */}
+      <AnnotatedCreativeViewer
+        bannerBase64={latestPack.bannerBase64}
+        bannerName={latestPack.bannerName}
+        findings={findings}
+        selectedFindingId={selectedFindingId}
+        onSelectFinding={(id) => {
+          setSelectedFindingId(id);
+          const el = document.getElementById(`finding_card_${id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }}
+      />
+
+      {/* ROUND 3 FEATURE 2: GROUPED CHANGE ORDER PANEL */}
+      <ChangeOrderPanel
+        campaignId={campaign.id}
+        changeOrders={campaign.changeOrders || []}
+        currentRole={currentRole}
+        defaultCaption={latestPack.caption}
+        onRevisionSubmitted={onRefresh}
+      />
+
       {/* Findings List Section */}
-      <div className="space-y-4">
+      <div className="space-y-4 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="font-serif text-xl text-ink font-normal">
-              Preflight Inspection Findings ({findings.length})
+              Structured Evidence Citations ({findings.length})
             </h3>
             <span className="text-[12px] font-mono text-ash">
               Rev {latestPack?.revision || 1} • SHA256: [{latestPack?.packHash ? latestPack.packHash.slice(0, 8) : "none"}]
@@ -234,103 +263,113 @@ export function FindingsReport({ campaign, onRefresh, onGoToApproval, onGoToUplo
               const isContradicted = finding.status === "CONTRADICTED";
               const isResolved = finding.resolution === "ACCEPTED";
               const isEscalated = finding.resolution === "ESCALATED";
+              const isFocused = selectedFindingId === finding.id;
 
               return (
                 <div
                   key={finding.id}
-                  className={`bg-paper rounded-2xl border p-5 transition-all shadow-subtle-card ${
-                    isResolved
-                      ? "border-mist opacity-70"
+                  id={`finding_card_${finding.id}`}
+                  className={`p-5 rounded-2xl border transition-all ${
+                    isFocused
+                      ? "ring-2 ring-twilight bg-paper shadow-md"
+                      : isResolved
+                      ? "bg-status-pass-bg/20 border-status-pass-border/50 opacity-90"
                       : isContradicted
-                      ? "border-status-error-border/80"
-                      : "border-mist"
+                      ? "bg-paper border-status-error-border/60 shadow-xs"
+                      : "bg-paper border-status-warn-border/60 shadow-xs"
                   }`}
                 >
-                  {/* Top Bar of Finding */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-mist/80">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-pill bg-linen border border-mist text-charcoal font-medium">
-                        {finding.layer.replace("_", " ")}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mist/80 pb-3 mb-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-pill bg-linen border border-mist text-charcoal">
+                        {finding.layer}
                       </span>
-                      <span className="text-[12px] font-mono text-ash">Location: {finding.location}</span>
+                      <span className="text-mist">•</span>
+                      <span className="font-mono text-xs text-ash">{finding.location}</span>
+                      {finding.box2d && (
+                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">
+                          📍 Visually Located
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {isResolved && (
-                        <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-pill bg-status-pass-bg text-status-pass border border-status-pass-border">
-                          Fix Accepted
-                        </span>
-                      )}
-                      {isEscalated && (
-                        <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-pill bg-status-warn-bg text-status-warn border border-status-warn-border">
-                          Escalated to Brand Lead
-                        </span>
-                      )}
                       <span
-                        className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-pill ${
-                          isContradicted
+                        className={`text-[11px] font-mono px-2.5 py-0.5 rounded-pill font-semibold ${
+                          isResolved
+                            ? "bg-status-pass-bg text-status-pass border border-status-pass-border"
+                            : isEscalated
+                            ? "bg-linen text-charcoal border border-mist"
+                            : isContradicted
                             ? "bg-status-error-bg text-status-error border border-status-error-border"
                             : "bg-status-warn-bg text-status-warn border border-status-warn-border"
                         }`}
                       >
-                        {finding.status}
+                        {isResolved
+                          ? "✓ Fix Accepted"
+                          : isEscalated
+                          ? "Escalated for Human Review"
+                          : finding.status}
                       </span>
                     </div>
                   </div>
 
-                  {/* Issue headline */}
-                  <div className="mb-2">
-                    <h4 className="text-[15px] font-semibold text-ink font-sans">{finding.issue}</h4>
-                  </div>
+                  <div className="space-y-3">
+                    <h4 className="font-serif text-lg text-ink font-normal">{finding.issue}</h4>
 
-                  {/* Evidence Box */}
-                  <div className="p-3 bg-linen rounded-xl border border-mist/80 text-[12px] font-mono text-charcoal my-3 space-y-1">
-                    <span className="text-ash block text-[10px] uppercase font-bold tracking-wider">
-                      Ground Truth Evidence:
-                    </span>
-                    <p className="leading-relaxed">{finding.evidence}</p>
-                  </div>
+                    {/* Evidence Quote */}
+                    <div className="p-3.5 bg-linen rounded-xl border border-mist text-xs font-sans space-y-1">
+                      <span className="font-mono text-[10px] text-ash uppercase tracking-wider block">
+                        Contract Ground Truth Evidence
+                      </span>
+                      <p className="text-charcoal leading-relaxed">{finding.evidence}</p>
+                    </div>
 
-                  {/* Suggested Fix */}
-                  <div className="p-3 bg-paper rounded-xl border border-mist text-[13px] text-ink font-sans flex items-start gap-2">
-                    <ArrowRight className="w-4 h-4 text-signal-blue shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold text-charcoal">Suggested Correction: </span>
-                      <span className="text-ink">{finding.suggestedFix}</span>
+                    {/* Suggested Fix */}
+                    <div className="p-3.5 bg-signal-blue/5 border border-signal-blue/20 rounded-xl text-xs font-sans space-y-1">
+                      <span className="font-mono text-[10px] text-signal-blue uppercase tracking-wider font-semibold block">
+                        Suggested Minimal Correction
+                      </span>
+                      <p className="text-charcoal leading-relaxed">{finding.suggestedFix}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-[11px] font-mono text-ash">
+                        Finding ID: {finding.id}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {finding.resolution !== "ACCEPTED" ? (
+                          <>
+                            <button
+                              onClick={() => handleResolve(finding.id, "ACCEPTED")}
+                              disabled={resolvingId === finding.id}
+                              className="px-3.5 py-1.5 rounded-lg bg-twilight hover:bg-ink text-paper text-xs font-mono font-medium transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+                            >
+                              <Check className="w-3.5 h-3.5 text-signal-blue" />
+                              <span>Accept Fix</span>
+                            </button>
+                            <button
+                              onClick={() => handleResolve(finding.id, "ESCALATED")}
+                              disabled={resolvingId === finding.id}
+                              className="px-3 py-1.5 rounded-lg border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+                            >
+                              <span>Escalate</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleResolve(finding.id, "PENDING")}
+                            disabled={resolvingId === finding.id}
+                            className="px-3 py-1 rounded-lg border border-mist bg-paper hover:bg-linen text-ash hover:text-charcoal text-[11px] font-mono transition-colors cursor-pointer"
+                          >
+                            <span>Undo Acceptance</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  {!isResolved ? (
-                    <div className="mt-4 pt-3 border-t border-mist/80 flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleResolve(finding.id, "ESCALATED")}
-                        disabled={resolvingId === finding.id}
-                        className="text-[12px] font-medium px-3.5 py-1.5 rounded-lg border border-twilight text-twilight hover:bg-linen transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
-                      >
-                        {resolvingId === finding.id ? "Updating..." : "Escalate"}
-                      </button>
-                      <button
-                        onClick={() => handleResolve(finding.id, "ACCEPTED")}
-                        disabled={resolvingId === finding.id}
-                        className="text-[12px] font-medium px-3.5 py-1.5 rounded-lg border border-signal-blue text-signal-blue hover:bg-signal-blue/5 transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
-                      >
-                        <Check className={`w-3.5 h-3.5 ${resolvingId === finding.id ? "animate-spin" : ""}`} />
-                        <span>{resolvingId === finding.id ? "Resolving..." : "Accept Suggested Fix"}</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mt-3 pt-2 border-t border-mist/50 flex items-center justify-end">
-                      <button
-                        onClick={() => handleResolve(finding.id, "PENDING")}
-                        disabled={resolvingId === finding.id}
-                        className="text-[11px] font-mono text-ash hover:text-ink underline transition-colors cursor-pointer"
-                        title="Re-open this finding for review"
-                      >
-                        Re-open finding
-                      </button>
-                    </div>
-                  )}
                 </div>
               );
             })}

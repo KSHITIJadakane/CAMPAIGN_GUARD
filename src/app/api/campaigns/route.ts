@@ -31,7 +31,16 @@ export async function GET() {
       });
 
       if (campaigns && campaigns.length > 0) {
-        return NextResponse.json({ success: true, campaigns });
+        const enriched = campaigns.map((c) => {
+          const mem = memoryStore.getCampaign(c.id);
+          return {
+            ...c,
+            members: mem?.members || [],
+            invites: mem?.invites || [],
+            changeOrders: mem?.changeOrders || [],
+          };
+        });
+        return NextResponse.json({ success: true, campaigns: enriched });
       }
     } catch (dbErr) {
       console.warn("Prisma query failed, falling back to memory store:", dbErr);

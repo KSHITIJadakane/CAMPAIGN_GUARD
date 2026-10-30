@@ -1,149 +1,219 @@
 # Architecture.md — CampaignGuard
-> App Architecture, Folder Structure & Tech Stack
+> System Architecture, Data Flow & Technical Stack | Round 3 Finalist Enterprise Build
 
 ---
 
-## 1. Tech Stack
+## 1. High-Level System Architecture
 
-| Layer | Choice | Reason |
-|-------|--------|--------|
-| Framework | Next.js 14 (App Router) + TypeScript | Full-stack in one repo, native Vercel deployment, server components |
-| Styling | Tailwind CSS + shadcn/ui | Premium components, dark mode, consistent design system |
-| Database | Neon (serverless PostgreSQL) + Prisma ORM | Free tier, works natively on Vercel serverless |
-| AI | Google Gemini 1.5 Pro (multimodal) | Reads images directly — no separate OCR library needed |
-| Auth | NextAuth.js v5 (credentials provider) | Demo login per role, zero friction |
-| File Handling | Base64 in DB for demo | No external storage needed for hackathon |
-| Deployment | Vercel (Git auto-deploy) | Native Next.js host |
-
----
-
-## 2. App Flow
+CampaignGuard is architected as an end-to-end brand governance and visual preflight platform built on Next.js 14 App Router with TypeScript.
 
 ```
-[Landing Page] — Role select (Brand Manager / Creator / Reviewer)
-        |
-        v
-[Dashboard] — List of campaigns with status
-        |
-        +——> [Contract Builder] (Brand Manager)
-        |         Create / edit Campaign Contract
-        |         Set facts, claims, prohibited terms, variants
-        |
-        +——> [Submit Pack] (Creator)
-        |         Upload caption + banner + PDF
-        |         Trigger preflight check
-        |         View findings report
-        |         Accept / escalate findings
-        |
-        +——> [Review & Approve] (Reviewer)
-                  See findings summary + evidence
-                  Approve (locks revision hash)
-                  Any edit after = INVALIDATED
-```
-
----
-
-## 3. AI Check Pipeline
-
-```
-Campaign Pack submitted
-        |
-        +——> DETERMINISTIC (TypeScript, no AI)
-        |       - Discount % regex match vs contract number
-        |       - Date compare vs contract end date
-        |       - Prohibited terms: string.includes()
-        |       - Required qualifiers: string.includes()
-        |
-        +——> GEMINI 1.5 PRO (multimodal, structured JSON output)
-                - Send: caption + base64 image + PDF text + contract JSON
-                - Returns: structured Finding[] array
-                - Validated with Zod schema before saving
-                - Tasks: image text extraction, cross-asset compare, tone check
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CLIENT TIER (React 18)                           │
+│  ┌──────────────────────┬──────────────────────┬─────────────────────────┐  │
+│  │ Brand Manager Portal │   Creator Studio     │  Reviewer Verification  │  │
+│  │ • Contract Builder   │ • Asset Uploader     │ • Evidence Comparator   │  │
+│  │ • Invite Generator   │ • Visual Annotations │ • SHA-256 Version Lock  │  │
+│  │ • Governance Center  │ • Change Order Tasks │ • Invalidation Alerts   │  │
+│  └──────────────────────┴──────────────────────┴─────────────────────────┘  │
+│                                      │                                      │
+│                                      ▼                                      │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │              UNIFIED STATE, ROUTING & RBAC MIDDLEWARE                 │  │
+│  │ • Dynamic Route Handlers (`/dashboard`, `/invite`, `/api/*`)          │  │
+│  │ • Campaign-Scoped Role Authorization & Tokenized Invitation System    │  │
+│  │ • Quick Judge Persona Switcher for Zero-Setup Evaluation              │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         PREFLIGHT ENGINE (Hybrid)                           │
+│  ┌─────────────────────────────────┐   ┌─────────────────────────────────┐  │
+│  │      DETERMINISTIC VERIFIER     │   │      GEMINI 3.8 FLASH VISION    │  │
+│  │  • Regex math & numeric bounds  │   │  • Multimodal visual OCR        │  │
+│  │  • Expiration date validation   │   │  • Spatial box_2d extraction    │  │
+│  │  • Prohibited terms detector    │   │  • Cross-asset contradiction    │  │
+│  │  • Mandatory qualifier scanner  │   │  • Strict Zod Schema parsing    │  │
+│  └─────────────────────────────────┘   └─────────────────────────────────┘  │
+│                                      │                                      │
+│                                      ▼                                      │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │             ACTIONABLE REMEDIATION & GOVERNANCE LIFECYCLE             │  │
+│  │  • Grouped Change Order Tickets (Revision v1 → v2 re-analysis)        │  │
+│  │  • Interactive SVG/Canvas Bounding-Box Overlay Engine                 │  │
+│  │  • SHA-256 Revision Hash Generation & Drift Detection                 │  │
+│  │  • Real-Time Cross-Campaign Governance Analytics Aggregator           │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     DATA & INTEGRITY TIER (Authoritative)                   │
+│  • Prisma ORM Relational Models (Campaign, Contract, Pack, Finding, Lock)   │
+│  • Edge-Compatible Seed & State Store (Zero-Latency Serverless Deployment)  │
+│  • Append-Only Immutable Audit Ledger                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Database Schema (Prisma)
+## 2. Round 3 Feature Architectures
+
+### Feature 1: Multi-Role Access Control & Campaign Invites
+- **Invite Token Pipeline:**
+  1. Brand Manager issues invite via `POST /api/campaigns/[id]/invites` specifying `email` and target `role` (`CREATOR` or `REVIEWER`).
+  2. Server generates a cryptographically random token (`inv_...`) bound to the campaign, role, and expiration window.
+  3. Generates shareable URL: `/invite?token=inv_...`.
+  4. Recipient visits `/invite`, inspects campaign metadata, and clicks **"Accept & Enter Workspace"** via `POST /api/invites/[token]/accept`.
+  5. Session switches to the campaign-scoped role. Creators are restricted from editing contracts or signing approval locks; Reviewers are restricted from modifying asset files.
+
+### Feature 2: Visual OCR & Evidence-Linked Change Orders
+- **Spatial Bounding-Box Detection:**
+  1. Multimodal request sent to Gemini with instructions to locate contradicting elements on banner imagery.
+  2. Model returns coordinates in normalized format: `box_2d: [ymin, xmin, ymax, xmax]` ($0 \dots 1000$).
+  3. `AnnotatedCreativeViewer` maps coordinates dynamically to relative container percentages (`top`, `left`, `width`, `height`).
+  4. Bidirectional binding: Hovering or clicking a bounding box highlights the corresponding finding card; clicking a finding focuses the bounding box on the graphic.
+- **Change Order & Re-Analysis Pipeline:**
+  1. Findings for asset revision $N$ are grouped into a single **Change Order Ticket**.
+  2. Assigned Creator reviews visual annotations and uploads revision $N+1$ with a **Designer Correction Note**.
+  3. Preflight engine re-analyzes revision $N+1$ and executes issue-matching:
+     - Discrepancy resolved $\rightarrow$ status `RESOLVED`.
+     - Discrepancy persists $\rightarrow$ status `STILL_PRESENT`.
+     - Ambiguous match $\rightarrow$ status `NEEDS_HUMAN_REVIEW`.
+  4. Reviewer inspects side-by-side comparison before executing cryptographic seal.
+
+### Feature 3: Cross-Campaign Governance Analytics Dashboard
+- **Real-Time Aggregation Service (`src/lib/analytics.ts`):**
+  - **KPI 1: Audited Campaigns:** Counts campaigns with at least one executed preflight check.
+  - **KPI 2: Confirmed Violations:** Unique violations across active packs (excluding dismissed suggestions).
+  - **KPI 3: First-Pass Approval Rate:** $\frac{\text{Assets approved at Rev 1}}{\text{Total reviewed assets}} \times 100$.
+  - **KPI 4: Average Revision Cycles:** Mean correction rounds required across campaigns.
+  - **KPI 5: Cryptographically Sealed Vault:** Approved, tamper-proof campaigns.
+  - **Bottleneck Intelligence:** Analyzes active pending states to compute wait times by role (waiting on Creator revision vs Reviewer signoff).
+
+---
+
+## 3. Data Schema & Models
 
 ```prisma
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  role      Role     // BRAND_MANAGER | CREATOR | REVIEWER
-  campaigns Campaign[]
+  role      String   // "BRAND_MANAGER" | "CREATOR" | "REVIEWER"
+  createdAt DateTime @default(now())
 }
 
 model Campaign {
-  id          String           @id @default(cuid())
-  name        String
-  status      CampaignStatus   // DRAFT | NEEDS_REVIEW | APPROVED | INVALIDATED
-  createdAt   DateTime         @default(now())
-  contracts   Contract[]
-  packs       CampaignPack[]
-  auditLogs   AuditLog[]
+  id                     String           @id @default(cuid())
+  title                  String
+  product                String
+  brand                  String
+  status                 String           @default("DRAFT")
+  currentContractVersion Int              @default(1)
+  contracts              Contract[]
+  packs                  CampaignPack[]
+  members                CampaignMember[]
+  invites                CampaignInvite[]
+  changeOrders           ChangeOrder[]
+  auditLogs              AuditLog[]
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
 }
 
-model Contract {
-  id              String    @id @default(cuid())
-  version         Int       @default(1)
-  campaignId      String
-  campaign        Campaign  @relation(...)
-  product         String
-  channel         String
-  audience        String
-  offerPercent    Float
-  eligibility     String
-  endDate         DateTime
-  approvedClaims  String[]
-  requiredQuals   String[]
-  prohibitedTerms String[]
-  variants        Json      // channel-specific variant overrides
-  createdAt       DateTime  @default(now())
-  isActive        Boolean   @default(true)
+model CampaignMember {
+  id         String   @id @default(cuid())
+  campaignId String
+  email      String
+  name       String
+  role       String   // "BRAND_MANAGER" | "CREATOR" | "REVIEWER"
+  joinedAt   DateTime @default(now())
+}
+
+model CampaignInvite {
+  id         String   @id @default(cuid())
+  campaignId String
+  token      String   @unique
+  email      String
+  role       String
+  status     String   // "PENDING" | "ACCEPTED" | "REVOKED"
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
 }
 
 model CampaignPack {
-  id           String    @id @default(cuid())
-  revision     Int       @default(1)
-  hash         String    // SHA256 of all asset content
+  id           String        @id @default(cuid())
   campaignId   String
+  revision     Int           @default(1)
+  packHash     String        // SHA-256 of combined assets
   caption      String
   bannerBase64 String?
+  bannerName   String?
   pdfText      String?
-  status       PackStatus // PENDING | CHECKING | FINDINGS | APPROVED | INVALIDATED
+  pdfName      String?
+  status       String        @default("PENDING")
   findings     Finding[]
+  changeOrders ChangeOrder[]
   approvals    Approval[]
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime      @default(now())
 }
 
 model Finding {
-  id           String       @id @default(cuid())
+  id           String   @id @default(cuid())
   packId       String
-  layer        CheckLayer   // FACTS | CROSS_ASSET | BRAND_RULES | ACCESSIBILITY
-  location     String       // "caption" | "banner" | "pdf"
+  layer        String   // "FACTS" | "CROSS_ASSET" | "BRAND_RULES" | "ACCESSIBILITY"
+  location     String
   issue        String
   evidence     String
   suggestedFix String
-  status       FindingStatus // CONTRADICTED | INSUFFICIENT_EVIDENCE | SUPPORTED
-  resolution   Resolution?  // ACCEPTED | ESCALATED | PENDING
+  status       String   // "CONTRADICTED" | "INSUFFICIENT_EVIDENCE" | "SUPPORTED"
+  resolution   String   @default("PENDING")
+  box2dJson    String?  // JSON [ymin, xmin, ymax, xmax] normalized 0-1000
+  createdAt    DateTime @default(now())
+}
+
+model ChangeOrder {
+  id              String             @id @default(cuid())
+  campaignId      String
+  packId          String
+  revision        Int
+  assignedCreator String
+  status          String             // "OPEN" | "SUBMITTED" | "RESOLVED"
+  designerNote    String?
+  issues          ChangeOrderIssue[]
+  createdAt       DateTime           @default(now())
+}
+
+model ChangeOrderIssue {
+  id            String      @id @default(cuid())
+  changeOrderId String
+  findingId     String
+  issue         String
+  evidence      String
+  suggestedFix  String
+  box2dJson     String?
+  status        String      // "OPEN" | "RESOLVED" | "STILL_PRESENT" | "NEEDS_HUMAN_REVIEW"
 }
 
 model Approval {
   id              String   @id @default(cuid())
   packId          String
-  packHash        String   // bound to this exact revision
-  contractVersion Int      // bound to this contract version
-  reviewerId      String
-  approvedAt      DateTime @default(now())
+  packHash        String
+  contractVersion Int
+  reviewerName    String
+  reviewerRole    String
   notes           String?
+  isValid         Boolean  @default(true)
+  approvedAt      DateTime @default(now())
 }
 
 model AuditLog {
   id         String   @id @default(cuid())
   campaignId String
-  userId     String
-  action     String
+  actorName  String
+  actorRole  String
+  action     String   // "CONTRACT_CREATED" | "INVITE_SENT" | "INVITE_ACCEPTED" | "PACK_SUBMITTED" | "CHANGE_ORDER_CREATED" | "APPROVED" | "INVALIDATED"
   detail     String
   createdAt  DateTime @default(now())
 }
@@ -151,92 +221,19 @@ model AuditLog {
 
 ---
 
-## 5. Folder Structure
+## 4. API Endpoints
 
-```
-campaign-guard/
-├── prisma/
-│   └── schema.prisma
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx                    # Root layout, fonts, theme
-│   │   ├── page.tsx                      # Landing page
-│   │   ├── (auth)/
-│   │   │   └── login/page.tsx            # Role select login
-│   │   ├── dashboard/
-│   │   │   └── page.tsx                  # Campaign list + status
-│   │   ├── contracts/
-│   │   │   ├── new/page.tsx              # Create contract (Brand Manager)
-│   │   │   └── [id]/page.tsx             # View/edit contract
-│   │   ├── campaigns/
-│   │   │   ├── [id]/
-│   │   │   │   ├── submit/page.tsx       # Upload pack (Creator)
-│   │   │   │   ├── report/page.tsx       # Findings report
-│   │   │   │   ├── approve/page.tsx      # Reviewer approval
-│   │   │   │   └── history/page.tsx      # Audit trail
-│   │   └── api/
-│   │       ├── auth/[...nextauth]/route.ts
-│   │       ├── campaigns/route.ts
-│   │       ├── contracts/route.ts
-│   │       ├── packs/route.ts
-│   │       ├── packs/[id]/check/route.ts # Trigger preflight
-│   │       ├── packs/[id]/approve/route.ts
-│   │       └── findings/[id]/resolve/route.ts
-│   ├── components/
-│   │   ├── ui/                           # shadcn/ui components
-│   │   ├── layout/
-│   │   │   ├── Navbar.tsx
-│   │   │   └── Sidebar.tsx
-│   │   ├── contract/
-│   │   │   └── ContractForm.tsx
-│   │   ├── campaign/
-│   │   │   ├── CampaignCard.tsx
-│   │   │   ├── StatusBadge.tsx
-│   │   │   └── PackUploader.tsx
-│   │   ├── findings/
-│   │   │   ├── FindingCard.tsx
-│   │   │   ├── FindingsReport.tsx
-│   │   │   └── LayerStatus.tsx
-│   │   └── approval/
-│   │       └── ApprovalPanel.tsx
-│   ├── lib/
-│   │   ├── prisma.ts                     # Prisma client singleton
-│   │   ├── auth.ts                       # NextAuth config
-│   │   ├── gemini.ts                     # Gemini API client
-│   │   ├── preflight/
-│   │   │   ├── index.ts                  # Orchestrator
-│   │   │   ├── deterministic.ts          # Fact checks (no AI)
-│   │   │   └── gemini-check.ts           # AI layer
-│   │   ├── hash.ts                       # SHA256 revision hash
-│   │   └── validators.ts                 # Zod schemas
-│   └── types/
-│       └── index.ts                      # Shared TypeScript types
-├── .env.local
-├── next.config.ts
-├── tailwind.config.ts
-└── package.json
-```
-
----
-
-## 6. API Routes
-
-| Method | Route | Purpose |
-|--------|-------|---------|
-| GET/POST | /api/campaigns | List / create campaigns |
-| GET/POST | /api/contracts | List / create contracts |
-| POST | /api/packs | Submit a new campaign pack |
-| POST | /api/packs/[id]/check | Trigger preflight check |
-| POST | /api/packs/[id]/approve | Reviewer approves revision |
-| PATCH | /api/findings/[id]/resolve | Accept or escalate a finding |
-
----
-
-## 7. Environment Variables
-
-```env
-DATABASE_URL=           # Neon PostgreSQL connection string
-GEMINI_API_KEY=         # Google Gemini API key
-NEXTAUTH_SECRET=        # Random secret for NextAuth
-NEXTAUTH_URL=           # Deployment URL
-```
+| Method | Route | Purpose | Role Authorization |
+|:---|:---|:---|:---|
+| `GET` | `/api/campaigns` | List all campaigns with active status | All Roles |
+| `POST` | `/api/campaigns` | Create a new campaign | Brand Manager |
+| `POST` | `/api/campaigns/[id]/invites` | Generate secure role-scoped invite link | Brand Manager |
+| `GET` | `/api/campaigns/[id]/invites` | View pending and accepted campaign invites | Brand Manager |
+| `POST` | `/api/invites/[token]/accept` | Accept campaign invitation and join workspace | Public / Invitee |
+| `DELETE` | `/api/invites/[id]` | Revoke pending invitation | Brand Manager |
+| `POST` | `/api/contracts` | Author or update campaign contract version | Brand Manager |
+| `POST` | `/api/packs/check` | Submit asset pack and trigger 4-layer preflight | Creator |
+| `POST` | `/api/packs/revision` | Submit revised creative (Rev 2) for Change Order | Creator |
+| `POST` | `/api/packs/approve` | Execute SHA-256 cryptographic revision lock | Reviewer |
+| `PATCH` | `/api/findings/[id]/resolve` | Accept or escalate individual finding | Creator / Reviewer |
+| `GET` | `/api/analytics` | Fetch real-time cross-campaign governance metrics | Brand Manager |

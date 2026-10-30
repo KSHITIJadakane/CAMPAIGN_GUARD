@@ -25,7 +25,10 @@ import {
   Upload,
   ArrowUpRight,
   FolderOpen,
-  LayoutGrid
+  LayoutGrid,
+  UserPlus,
+  BarChart3,
+  Users
 } from "lucide-react";
 import { CampaignCard } from "@/components/campaign/CampaignCard";
 import { ContractBuilder } from "@/components/contract/ContractBuilder";
@@ -33,6 +36,8 @@ import { PackUploader } from "@/components/campaign/PackUploader";
 import { FindingsReport } from "@/components/findings/FindingsReport";
 import { ApprovalPanel } from "@/components/approval/ApprovalPanel";
 import { AuditTimeline } from "@/components/campaign/AuditTimeline";
+import { TeamInviteModal } from "@/components/campaign/TeamInviteModal";
+import { GovernanceAnalyticsView } from "@/components/analytics/GovernanceAnalyticsView";
 import { useRole } from "@/components/layout/RoleContext";
 import { StatusBadge } from "@/components/campaign/StatusBadge";
 import { Role } from "@/types";
@@ -63,8 +68,22 @@ function DashboardContent() {
   const [newProduct, setNewProduct] = useState("");
   const [newBrand, setNewBrand] = useState("");
 
-  const campaignParam = searchParams.get("campaign");
+  const campaignParam = searchParams.get("campaign") || searchParams.get("campaignId");
   const tabParam = (searchParams.get("tab") as WorkspaceTab) || "contract";
+  const viewParam = searchParams.get("view");
+
+  const [hubView, setHubView] = useState<"CAMPAIGNS" | "ANALYTICS">(
+    viewParam === "analytics" ? "ANALYTICS" : "CAMPAIGNS"
+  );
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (viewParam === "analytics") {
+      setHubView("ANALYTICS");
+    } else if (!viewParam && !campaignParam) {
+      setHubView("CAMPAIGNS");
+    }
+  }, [viewParam, campaignParam]);
 
   const fetchCampaigns = async () => {
     try {
@@ -359,7 +378,60 @@ function DashboardContent() {
       {/* ========================================================================= */}
       {!selectedCampaign && (
         <div className="space-y-8 animate-fade-in">
-          {/* Hub Header */}
+          {/* Hub View Switcher (Round 3 Feature 3: Cross-Campaign Governance Analytics) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-mist/80 pb-4">
+            <div className="flex items-center gap-2 p-1 bg-paper border border-mist rounded-2xl shadow-xs">
+              <button
+                onClick={() => {
+                  setHubView("CAMPAIGNS");
+                  router.push("/dashboard");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center gap-2 cursor-pointer ${
+                  hubView === "CAMPAIGNS"
+                    ? "bg-twilight text-paper shadow-sm"
+                    : "text-charcoal hover:text-ink hover:bg-linen"
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Campaigns Directory</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  hubView === "CAMPAIGNS" ? "bg-white/20 text-paper" : "bg-linen text-ash"
+                }`}>
+                  {campaigns.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setHubView("ANALYTICS");
+                  router.push("/dashboard?view=analytics");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-mono font-medium transition-all flex items-center gap-2 cursor-pointer ${
+                  hubView === "ANALYTICS"
+                    ? "bg-twilight text-paper shadow-sm"
+                    : "text-charcoal hover:text-ink hover:bg-linen"
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-signal-blue" />
+                <span>Governance Analytics</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-signal-blue/20 text-signal-blue text-[10px] font-bold">
+                  NEW (R3)
+                </span>
+              </button>
+            </div>
+
+            <div className="text-xs font-mono text-ash flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-status-pass" />
+              <span>{hubView === "CAMPAIGNS" ? "Live Workspace Directory" : "Live Cross-Campaign Compliance Ledger"}</span>
+            </div>
+          </div>
+
+          {/* Conditional Sub-View: ANALYTICS vs CAMPAIGNS DIRECTORY */}
+          {hubView === "ANALYTICS" ? (
+            <GovernanceAnalyticsView onSelectCampaign={(id) => navigateToCampaign(id)} />
+          ) : (
+            <>
+              {/* Hub Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-mist pb-6">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
@@ -527,6 +599,8 @@ function DashboardContent() {
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
       )}
 
@@ -622,30 +696,80 @@ function DashboardContent() {
                 </div>
               </div>
 
-              {/* Persona Switcher */}
-              <div className="flex items-center gap-1 p-1 bg-paper border border-mist rounded-xl text-xs font-mono shadow-xs">
-                <span className="text-ash px-2 hidden lg:inline">Persona:</span>
-                {(["BRAND_MANAGER", "CREATOR", "REVIEWER"] as Role[]).map((r) => {
-                  const isActive = currentRole === r;
-                  return (
-                    <button
-                      key={r}
-                      onClick={() => {
-                        setRole(r);
-                        if (r === "CREATOR") navigateToTab("creator");
-                        else if (r === "REVIEWER") navigateToTab("approval");
-                        else navigateToTab("contract");
-                      }}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium text-[11px] ${
-                        isActive ? "bg-twilight text-paper shadow-sm" : "text-charcoal hover:text-ink hover:bg-linen"
-                      }`}
-                    >
-                      {r === "BRAND_MANAGER" ? "Brand" : r === "CREATOR" ? "Creator" : "Reviewer"}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Round 3 Feature 1: Team & Invites Button */}
+                <button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="px-3.5 py-1.5 rounded-xl border border-mist bg-paper hover:bg-linen text-charcoal text-xs font-mono font-medium transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                  title="Manage Campaign Members & Invites"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-signal-blue" />
+                  <span>Team & Invites</span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-signal-blue/15 text-signal-blue text-[10px] font-bold">
+                    {(selectedCampaign.members?.length || 0) + (selectedCampaign.invites?.filter((i: any) => i.status === "PENDING").length || 0)}
+                  </span>
+                </button>
+
+                {/* Persona Switcher */}
+                <div className="flex items-center gap-1 p-1 bg-paper border border-mist rounded-xl text-xs font-mono shadow-xs">
+                  <span className="text-ash px-2 hidden lg:inline">Persona:</span>
+                  {(["BRAND_MANAGER", "CREATOR", "REVIEWER"] as Role[]).map((r) => {
+                    const isActive = currentRole === r;
+                    return (
+                      <button
+                        key={r}
+                        onClick={() => {
+                          setRole(r);
+                          if (r === "CREATOR") navigateToTab("creator");
+                          else if (r === "REVIEWER") navigateToTab("approval");
+                          else navigateToTab("contract");
+                        }}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium text-[11px] ${
+                          isActive ? "bg-twilight text-paper shadow-sm" : "text-charcoal hover:text-ink hover:bg-linen"
+                        }`}
+                      >
+                        {r === "BRAND_MANAGER" ? "Brand" : r === "CREATOR" ? "Creator" : "Reviewer"}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+
+            {/* Scoped Role Guidance Banners (Round 3 Feature 1) */}
+            {currentRole === "CREATOR" && (
+              <div className="p-3 bg-linen/90 border border-signal-blue/30 rounded-xl text-xs font-sans text-charcoal flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-signal-blue shrink-0" />
+                  <span>
+                    <strong>Creator Scoped Workspace:</strong> Upload creative assets in <strong>Step 2 (Creative Studio)</strong> and resolve visual change orders in <strong>Step 3</strong>. (Truth Contract & Gatekeeper Lock are protected).
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigateToTab("creator")}
+                  className="text-signal-blue hover:text-twilight font-mono text-[11px] font-semibold underline shrink-0 cursor-pointer"
+                >
+                  Go to Creative Studio →
+                </button>
+              </div>
+            )}
+
+            {currentRole === "REVIEWER" && (
+              <div className="p-3 bg-linen/90 border border-status-pass/40 rounded-xl text-xs font-sans text-charcoal flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-status-pass shrink-0" />
+                  <span>
+                    <strong>Gatekeeper Scoped Workspace:</strong> Authorized to execute SHA-256 cryptographic signatures in <strong>Step 4 (Gatekeeper Lock)</strong> and inspect tamper logs in <strong>Step 5</strong>.
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigateToTab("approval")}
+                  className="text-status-pass hover:text-ink font-mono text-[11px] font-semibold underline shrink-0 cursor-pointer"
+                >
+                  Go to Gatekeeper Terminal →
+                </button>
+              </div>
+            )}
 
             {/* Demo Benchmark Banner if active */}
             {isDemo && (
@@ -1060,6 +1184,17 @@ function DashboardContent() {
                 )}
               </div>
             </div>
+
+            {/* Team Invite & RBAC Modal (Round 3 Feature 1) */}
+            <TeamInviteModal
+              campaignId={selectedCampaign.id}
+              campaignTitle={selectedCampaign.title}
+              members={selectedCampaign.members || []}
+              invites={selectedCampaign.invites || []}
+              isOpen={isInviteModalOpen}
+              onClose={() => setIsInviteModalOpen(false)}
+              onRefresh={fetchCampaigns}
+            />
           </div>
         );
       })()}

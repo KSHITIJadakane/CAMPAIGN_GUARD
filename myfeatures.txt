@@ -1,0 +1,978 @@
+FEATURE 1 — CAMPAIGN COLLABORATION & ROLE-BASED ACCESS CONTROL
+
+You are working on the EXISTING CampaignGuard project.
+
+Your task is to implement the first official Round 3 improvement: Multi-Role Access Control with Secure Campaign Invitation Links.
+
+This is an extension of the existing application. Do not create a new application, replace the architecture, or remove existing functionality.
+
+1. First inspect the existing project
+
+Before writing code:
+
+1. Inspect the complete repository structure.
+2. Identify the existing authentication implementation, if any.
+3. Inspect the current Persona Switcher.
+4. Inspect Campaigns Hub and campaign data models.
+5. Inspect Prisma schema, current storage mechanism, API routes and middleware.
+6. Identify existing user, campaign, contract, creative, findings and audit-event structures.
+7. Identify which parts currently use in-memory data or seed data.
+8. Identify existing UI components that can be reused.
+
+Create a short implementation plan based on the actual codebase.
+
+Do not assume that authentication or persistent database storage already exists.
+
+2. Main objective
+
+Replace the simulated persona-switching system with real authentication and campaign-scoped role-based permissions.
+
+Implement three roles:
+
+Brand Manager
+
+- Create and manage campaigns.
+- Create and edit campaign contracts.
+- Invite Creators and Reviewers.
+- View all assigned campaign creatives and findings.
+- Create and assign correction tasks.
+- Monitor campaign progress.
+- View governance analytics.
+- Perform final campaign management actions.
+
+Creator
+
+- Access only campaigns to which they have been invited.
+- View assigned creative assets.
+- View findings and visual annotations.
+- View assigned Change Orders.
+- Upload revised creative assets.
+- View correction status and deadlines.
+- Cannot modify campaign contracts.
+- Cannot approve or lock campaigns.
+
+Reviewer
+
+- Access only assigned campaigns.
+- View creative assets and findings.
+- Review Change Orders and correction evidence.
+- Mark findings as requiring human review.
+- Approve, reject or request further correction, subject to the existing approval workflow.
+- Cannot silently edit campaign contracts or Creator submissions.
+- Cannot bypass the approval and audit system.
+
+Enforce these permissions on the server, not just by hiding frontend buttons.
+
+3. Authentication
+
+Implement genuine user authentication.
+
+Preferred approach:
+
+- Reuse existing authentication if it is secure and functional.
+- Otherwise, use Auth.js / NextAuth v5 if compatible with the current Next.js version.
+- Use secure password hashing if implementing credentials authentication.
+- Use secure session handling.
+- Validate user inputs using Zod.
+- Protect authenticated routes.
+- Provide login, logout and appropriate unauthorized-access handling.
+
+Do not implement fake login or client-only role switching.
+
+Do not expose passwords, session secrets or invitation tokens in client-side code or logs.
+
+4. Campaign-scoped membership
+
+Create a proper campaign membership model.
+
+A user should have a role within a specific campaign.
+
+For example:
+
+Campaign: EcoSip Flash Sale
+
+- Brand Manager: User A
+- Creator: User B
+- Reviewer: User C
+
+A Creator invited to EcoSip must not automatically access another campaign.
+
+Implement the necessary database relationships and server-side authorization checks.
+
+If the existing project uses Prisma, extend its schema carefully and generate the required migrations.
+
+If the project currently uses in-memory storage, first assess the migration risk. Do not silently pretend in-memory records are persistent. Implement a safe, consistent persistence solution compatible with the existing deployment.
+
+5. Secure invitation links
+
+Implement an invitation system.
+
+Brand Manager should be able to:
+
+1. Select a campaign.
+2. Select a role: Creator or Reviewer.
+3. Enter the invited person's email.
+4. Generate an invitation link.
+5. Copy the link.
+6. See invitation status.
+
+Invitation security requirements:
+
+- Generate cryptographically secure random tokens.
+- Store only a hash of the token.
+- Bind each invitation to a specific email, campaign and role.
+- Add an expiration time.
+- Allow one-time acceptance only.
+- Prevent token reuse.
+- Allow Brand Manager to revoke pending invitations.
+- Validate invitation status on the server.
+- Do not reveal whether arbitrary emails have existing accounts.
+
+If an email delivery provider is not already configured, implement a copy-invitation-link workflow. Do not claim that email delivery is functional without integrating and testing a real provider.
+
+6. Collaboration and accountability
+
+Integrate responsibility tracking into the Change Order workflow.
+
+Each correction task should support:
+
+- Assigned Creator.
+- Created by.
+- Assigned date.
+- Due date.
+- Current status.
+- Last updated time.
+- Handoff history.
+- Next responsible person or role.
+
+Use the existing Change Order as the primary correction task. Do not create an unnecessary second task-management application.
+
+7. Frontend requirements
+
+Build a professional interface consistent with the existing CampaignGuard design.
+
+Required screens/components:
+
+- Login screen.
+- User/session menu.
+- Campaign team and membership section.
+- Invite Creator / Reviewer modal.
+- Invitation status list.
+- Invitation acceptance screen.
+- Creator campaign workspace.
+- Reviewer review workspace.
+- Permission-denied and expired-invitation states.
+
+Preserve the existing navigation system and visual style.
+
+The current Persona Switcher may be retained only as a development/demo utility if necessary. It must not act as production authentication.
+
+8. Audit integration
+
+Record important events:
+
+- User invited.
+- Invitation accepted.
+- Invitation revoked.
+- Campaign membership created.
+- Role or membership changed.
+- Creator assigned a Change Order.
+- Creator uploads a revision.
+- Reviewer requests correction.
+- Reviewer approves or rejects.
+
+Use the existing immutable audit-trail architecture wherever possible.
+
+Never allow a client request to fabricate another user's identity or audit actor.
+
+9. Testing and security
+
+Test at minimum:
+
+- Unauthenticated user cannot access protected campaign routes.
+- Creator cannot access another campaign.
+- Creator cannot modify contract data.
+- Creator cannot approve or lock assets.
+- Reviewer cannot perform unauthorized contract edits.
+- Brand Manager can invite a Creator.
+- Expired invitation cannot be accepted.
+- Revoked invitation cannot be accepted.
+- Invitation cannot be reused.
+- Invalid role assignment is rejected.
+- API endpoints enforce permissions even when called directly.
+
+10. Non-negotiable constraints
+
+- Preserve all 12 Round 2 features.
+- Preserve SHA-256 lock and post-approval invalidation.
+- Preserve existing Gemini integration and preflight engine.
+- Preserve existing campaign data and demo benchmark.
+- Do not redesign the entire application.
+- Do not remove working routes or components.
+- Do not introduce unnecessary dependencies.
+- Do not add fake authentication or hardcoded user identities.
+- Do not expose secrets.
+- Do not claim a feature is complete without testing it.
+
+11. Completion report
+
+After implementation, provide:
+
+1. Files created.
+2. Files modified.
+3. Database schema changes and migrations.
+4. Authentication flow.
+5. Role permission matrix.
+6. Invitation flow.
+7. API routes added or changed.
+8. Security measures implemented.
+9. Tests executed and results.
+10. Remaining limitations.
+11. Exact steps to run and verify the feature locally.
+
+Implement this feature in the existing repository, not as a separate demo or mockup.
+
+Prioritize correctness, security and compatibility over unnecessary visual complexity.
+FEATURE 2 — VISUAL OCR & EVIDENCE-LINKED CREATIVE CHANGE ORDERS
+
+You are working on the EXISTING CampaignGuard repository.
+
+Implement the second official Round 3 improvement: Visual OCR with Auto-Annotated Change Orders.
+
+This feature must extend the existing Gemini-based 4-Layer Preflight Engine, Structured Findings Report, Creative Studio, 1-Click Fix Acceptance, SHA-256 Lock and Audit Trail.
+
+Do not replace these systems.
+
+1. Inspect the existing implementation first
+
+Before coding:
+
+1. Inspect the current Creative Studio and asset-upload flow.
+2. Inspect the Gemini 1.5 Pro integration.
+3. Inspect current OCR and multimodal prompts.
+4. Inspect the four-layer preflight engine.
+5. Inspect the structured findings data model.
+6. Inspect the existing fix-acceptance workflow.
+7. Inspect campaign contracts and contract-version handling.
+8. Inspect SHA-256 approval and invalidation logic.
+9. Inspect asset storage and image-preview components.
+10. Inspect the new campaign roles and permissions implemented in Feature 1.
+
+Identify the actual format of Gemini's existing response.
+
+Do not assume that bounding-box coordinates are already available.
+
+Create a short implementation plan before modifying code.
+
+2. Main objective
+
+When a Creator uploads a campaign poster or banner, CampaignGuard should:
+
+1. Analyze its text and visual content.
+2. Detect contract violations.
+3. Identify the visual location of each violation.
+4. Highlight the violation on the original image.
+5. Explain the exact contract rule that was violated.
+6. Generate one grouped Change Order for that asset.
+7. Assign the Change Order to the responsible Creator.
+8. Allow the Creator to upload a revised asset.
+9. Run the preflight engine again.
+10. Track whether each original issue was resolved.
+11. Allow a Reviewer to make the final decision.
+
+The goal is to move from simply detecting violations to managing their correction.
+
+3. Visual OCR and bounding-box annotations
+
+Extend the existing Gemini multimodal analysis.
+
+For every visual finding, capture when available:
+
+- Detected text.
+- Bounding-box coordinates.
+- Contract rule violated.
+- Expected text or requirement.
+- Severity.
+- Suggested minimal correction.
+- Confidence or uncertainty.
+- Associated asset version.
+- Finding identifier.
+
+Example:
+
+Detected text: "50% OFF"
+
+Contract requirement: "Maximum approved discount is 30%."
+
+Suggested correction: "Replace 50% OFF with 30% OFF."
+
+Visual location: Bounding box surrounding the discount text.
+
+Coordinate handling
+
+Verify the exact coordinate convention returned by the model/API.
+
+If the model returns normalized coordinates from 0 to 1000, convert them to original image pixels only after confirming the format.
+
+For example:
+
+x1 = xmin / 1000 * imageWidth
+
+y1 = ymin / 1000 * imageHeight
+
+x2 = xmax / 1000 * imageWidth
+
+y2 = ymax / 1000 * imageHeight
+
+Validate coordinate ranges and clamp invalid values.
+
+Account for image scaling, cropping, preview dimensions and letterboxing.
+
+Never draw incorrect bounding boxes just to make the demo look impressive.
+
+If coordinates are missing, malformed or uncertain, show the textual finding without a fabricated annotation and mark it for human review.
+
+4. Annotated creative viewer
+
+Build a visual inspection interface.
+
+Requirements:
+
+- Display the original creative.
+- Overlay bounding boxes on detected issues.
+- Use clear severity-based visual indicators.
+- Allow clicking a finding to highlight its corresponding location.
+- Allow clicking a bounding box to open its finding details.
+- Show detected text and contract evidence.
+- Support multiple findings on the same creative.
+- Ensure annotations remain aligned when the image is resized.
+- Provide a fallback list when visual coordinates are unavailable.
+
+Keep the original image unchanged. Annotations must be rendered as an interface overlay, not permanently burned into the uploaded original.
+
+5. Asset version management
+
+Implement immutable asset versions.
+
+Every new upload must create a new version.
+
+For example:
+
+- Banner v1 — Original upload.
+- Banner v2 — Creator correction.
+- Banner v3 — Further correction.
+
+Every finding must reference the exact asset version analyzed.
+
+Every Change Order must reference the relevant findings and asset version.
+
+Every approval must reference the exact asset version and contract version.
+
+Do not overwrite old asset records or modify previous findings to make them appear as if they were generated from a new version.
+
+A new upload must not inherit an old approval.
+
+Preserve the existing post-approval invalidation behavior.
+
+6. Grouped Change Orders
+
+Create one grouped Change Order per asset version rather than creating a separate task for every finding.
+
+Example:
+
+Change Order: EcoSip Flash Sale — Banner v1
+
+Issues:
+
+1. Discount exceeds approved limit.
+2. Required disclaimer missing.
+3. Campaign end date has expired.
+
+Each issue should contain:
+
+- Finding ID.
+- Detected text or visual evidence.
+- Bounding box, if available.
+- Violated contract clause.
+- Expected requirement.
+- Suggested correction.
+- Severity.
+- Resolution status.
+
+The Change Order should contain:
+
+- Campaign.
+- Asset and asset version.
+- Assigned Creator.
+- Created by.
+- Creation timestamp.
+- Due date, if assigned.
+- Overall status.
+- Linked findings.
+- Correction history.
+
+Possible overall statuses:
+
+- Open.
+- In Progress.
+- Submitted for Review.
+- Changes Required.
+- Resolved.
+- Closed.
+
+Avoid duplicating tasks for multiple findings on the same asset.
+
+7. Creator correction workspace
+
+Creators should be able to:
+
+- View assigned Change Orders.
+- Open annotated creatives.
+- Read contract evidence.
+- See exactly what needs correction.
+- Review suggested minimal fixes.
+- Upload a revised asset.
+- Add a correction note.
+- Submit the revision for re-analysis.
+
+Only authorized Creators should be allowed to upload revisions.
+
+Validate file size, MIME type and actual file signatures.
+
+Reject unsupported or unsafe uploads.
+
+Do not accept arbitrary SVG or executable content as trusted image assets.
+
+Store files securely and do not expose private storage credentials.
+
+8. Automated re-analysis
+
+When a revised asset is uploaded:
+
+1. Create a new immutable asset version.
+2. Run the existing 4-Layer Preflight Engine.
+3. Generate new findings linked to the new version.
+4. Compare the new findings with the previous Change Order issues.
+5. Update the status of each original issue.
+
+Use these issue-level statuses:
+
+- Resolved.
+- Still Present.
+- Needs Human Review.
+
+Issue matching
+
+Do not assume that findings can be matched perfectly by bounding-box coordinates.
+
+Coordinates may change after a designer edits the poster.
+
+Use a cautious matching strategy based on:
+
+- Contract rule identifier.
+- Detected text.
+- Finding type.
+- Asset context.
+- Relevant semantic evidence.
+
+If matching is ambiguous, use "Needs Human Review".
+
+Never mark an issue as resolved simply because its bounding box disappeared.
+
+9. Reviewer verification
+
+Reviewer should receive a clear review interface showing:
+
+- Original creative.
+- Revised creative.
+- Previous findings.
+- New findings.
+- Resolved issues.
+- Remaining violations.
+- Issues requiring human review.
+- Creator correction note.
+- Contract evidence.
+
+Reviewer actions:
+
+- Approve revision.
+- Reject revision.
+- Request additional correction.
+- Mark a finding for human review.
+
+AI may recommend a decision but must never automatically approve a campaign.
+
+Only an authorized Reviewer or Brand Manager, according to the existing permission model, can perform the final approval action.
+
+10. SHA-256 and audit integration
+
+Integrate with the existing approval system.
+
+On final approval:
+
+- Calculate the SHA-256 hash of the exact approved asset bytes.
+- Bind approval to the asset version and contract version.
+- Preserve the existing lock functionality.
+- Record the approval event in the audit trail.
+
+If an approved asset or contract changes, the existing approval must be invalidated.
+
+Record:
+
+- Original upload.
+- Findings generated.
+- Change Order created.
+- Creator assignment.
+- Revision uploaded.
+- Re-analysis completed.
+- Issue resolution statuses.
+- Reviewer decision.
+- Final approval.
+- Lock and invalidation events.
+
+Do not claim SHA-256 proves that content is compliant or establishes the identity of the person who uploaded it. It proves byte integrity.
+
+11. Failure handling
+
+Handle:
+
+- Gemini API timeout.
+- Invalid model JSON.
+- Missing bounding boxes.
+- Invalid coordinates.
+- Image processing failure.
+- Upload failure.
+- Re-analysis failure.
+- Ambiguous issue matching.
+
+Do not silently approve an asset if analysis fails.
+
+Preserve uploaded files and show clear retry/error states.
+
+12. UI requirements
+
+Create or extend:
+
+- Annotated Creative Viewer.
+- Findings Panel.
+- Grouped Change Order Details.
+- Creator Correction Workspace.
+- Revised Asset Upload.
+- Before/After Comparison.
+- Issue Resolution Tracker.
+- Reviewer Verification Panel.
+
+Reuse the existing CampaignGuard design system.
+
+Do not rebuild the entire Creative Studio.
+
+13. Testing requirements
+
+Test at minimum:
+
+1. An asset with a discount violation.
+2. An asset with a missing disclaimer.
+3. An asset with an expired date.
+4. Multiple violations grouped into one Change Order.
+5. Correct bounding-box alignment after resizing.
+6. Missing or invalid bounding-box fallback.
+7. New upload creates a new asset version.
+8. New findings reference the correct asset version.
+9. Resolved issue is not falsely matched.
+10. Remaining issue is marked Still Present.
+11. Ambiguous matching is marked Needs Human Review.
+12. Failed re-analysis does not approve the asset.
+13. Unauthorized Creator cannot upload revisions.
+14. Final approval locks the exact asset and contract versions.
+15. Later edits invalidate approval.
+
+14. Non-negotiable constraints
+
+- Preserve all Round 2 functionality.
+- Reuse the existing Gemini integration.
+- Reuse the existing preflight engine.
+- Reuse the existing SHA-256 lock.
+- Reuse the existing audit trail.
+- Preserve existing contract rules and 1-Click Fix Acceptance.
+- Do not fabricate OCR results or coordinates.
+- Do not auto-approve.
+- Do not overwrite historical asset versions.
+- Do not create a separate disconnected task-management system.
+- Do not claim tests passed unless actually executed.
+
+15. Completion report
+
+Provide:
+
+1. Existing architecture reused.
+2. New data models.
+3. Files created and modified.
+4. OCR response structure and coordinate convention.
+5. Annotation implementation.
+6. Asset versioning implementation.
+7. Change Order workflow.
+8. Creator correction workflow.
+9. Re-analysis and issue-matching logic.
+10. Reviewer approval integration.
+11. SHA-256 and audit integration.
+12. Tests and results.
+13. Remaining limitations.
+14. Steps to run and demonstrate the complete workflow.
+
+Implement this feature in the existing CampaignGuard application, not as a standalone prototype.
+FEATURE 3 — CROSS-CAMPAIGN GOVERNANCE ANALYTICS DASHBOARD
+
+You are working on the EXISTING CampaignGuard repository.
+
+Implement the third official Round 3 improvement: Cross-Campaign Governance Analytics Dashboard.
+
+The dashboard must aggregate actual CampaignGuard campaign, finding, Change Order, correction, review, approval and audit-event data.
+
+Do not create a dashboard populated with fabricated statistics.
+
+1. Inspect the existing project first
+
+Before coding:
+
+1. Inspect Campaigns Hub.
+2. Inspect campaign and contract models.
+3. Inspect asset and asset-version models.
+4. Inspect findings and severity structures.
+5. Inspect Change Order and issue-resolution models from Feature 2.
+6. Inspect approval and SHA-256 lock events.
+7. Inspect audit-trail event structure.
+8. Inspect campaign membership and role models from Feature 1.
+9. Inspect the existing dashboard and navigation.
+10. Identify the actual persistence layer and its limitations.
+
+Create a short implementation plan based on the existing codebase.
+
+Reuse existing records and services wherever possible.
+
+2. Main objective
+
+Build a cross-campaign analytics dashboard for Brand Managers.
+
+The dashboard should help answer:
+
+- How many campaigns have been audited?
+- How many confirmed compliance violations have occurred?
+- Which contract rules are repeatedly violated?
+- How many assets pass their first review?
+- How many correction rounds are typically required?
+- How long does approval take?
+- Where are campaigns waiting in the correction workflow?
+- Are Creators and Reviewers completing their responsibilities on time?
+
+The goal is operational visibility, not decorative charts.
+
+3. Dashboard overview
+
+Create a professional dashboard with these KPI cards:
+
+KPI 1 — Total Campaigns Audited
+
+Count campaigns with at least one completed preflight audit.
+
+Do not count empty campaigns as audited.
+
+KPI 2 — Confirmed Violations
+
+Count unique confirmed violations.
+
+Avoid counting the same finding multiple times because it appears in multiple API responses or dashboard aggregations.
+
+Exclude rejected AI suggestions and findings explicitly dismissed by a Reviewer.
+
+KPI 3 — First-Pass Approval Rate
+
+Formula:
+
+First-pass approval rate =
+
+Assets approved without requiring a correction round / Total assets that received a final review × 100.
+
+Define how re-uploads and repeated reviews are handled.
+
+Do not count assets with no completed review.
+
+KPI 4 — Average Correction Rounds
+
+Calculate the average number of correction rounds per reviewed asset.
+
+Define one correction round as a Creator revision submitted after a Change Order.
+
+Do not count repeated API calls as additional correction rounds.
+
+KPI 5 — Average Time to Final Approval
+
+Calculate the elapsed time between the relevant first submission and final approval.
+
+Exclude assets that have not yet been approved from the completed-approval average.
+
+Clearly distinguish completed approval time from currently pending age.
+
+4. Governance trend analysis
+
+Add charts for:
+
+A. Violations by Category
+
+Examples:
+
+- Discount mismatch.
+- Missing disclaimer.
+- Expired campaign date.
+- Unapproved claim.
+- Prohibited wording.
+- Other contract violations.
+
+Use actual findings grouped by category.
+
+B. Campaign Compliance Comparison
+
+Compare campaigns using transparent measures such as:
+
+- Total confirmed violations.
+- Reviewed assets.
+- First-pass approval rate.
+- Correction rounds.
+
+Allow the Brand Manager to select a campaign.
+
+Avoid ranking campaigns solely by raw violation count because campaigns can have different numbers of assets and different review volumes.
+
+C. Approval Trend
+
+Show approvals over time.
+
+Use real approval events and sensible date aggregation.
+
+Provide useful date ranges such as:
+
+- Last 7 days.
+- Last 30 days.
+- Last 90 days.
+- All time.
+
+5. Workflow Bottleneck Intelligence
+
+This is an important part of the dashboard.
+
+Identify where campaign work is currently waiting.
+
+Examples:
+
+- Waiting for Creator correction.
+- Waiting for Creator submission.
+- Waiting for Reviewer approval.
+- Waiting for Brand Manager action.
+
+Calculate waiting duration from actual workflow transition timestamps or audit events.
+
+Show:
+
+- Number of items currently waiting.
+- Average waiting time by workflow state.
+- Oldest pending item.
+- Campaign associated with the pending item.
+- Responsible role.
+- Current status.
+
+Use actual event history.
+
+If event history is insufficient, show unavailable data rather than inventing waiting durations.
+
+Do not build speculative AI predictions. Simple evidence-based bottleneck analysis is enough.
+
+6. Recurring violation analysis
+
+Identify the most frequently recurring contract violations across campaigns.
+
+For each category show:
+
+- Violation category.
+- Number of confirmed occurrences.
+- Number of campaigns affected.
+- Recent trend, if enough historical data exists.
+- Relevant campaigns.
+
+Use unique finding identifiers and exclude dismissed or rejected findings.
+
+Make it possible for a Brand Manager to investigate a category and navigate to the related campaign findings, subject to permissions.
+
+7. Creator and Reviewer operational metrics
+
+Provide basic operational visibility.
+
+Possible metrics:
+
+- Number of assigned Change Orders.
+- Completed corrections.
+- Pending corrections.
+- Average correction turnaround time.
+- Average reviewer waiting time.
+
+Important:
+
+Do not build an aggressive creator reputation leaderboard.
+
+Do not label a Creator as unreliable based on a handful of submissions.
+
+Use sample-size-aware metrics and clearly indicate when there is insufficient data.
+
+Respect campaign-scoped permissions.
+
+A Brand Manager should only see metrics for campaigns they are authorized to manage.
+
+8. Filters
+
+Add filters for:
+
+- Date range.
+- Campaign.
+- Violation category.
+- Workflow status.
+- Creator, where authorized.
+
+Filters should update all relevant KPI cards, charts and tables consistently.
+
+Avoid filters that change only one chart while leaving other displayed statistics unfiltered.
+
+9. Data and calculation architecture
+
+Create reusable analytics services rather than placing all calculation logic inside frontend components.
+
+Requirements:
+
+- Server-side aggregation where appropriate.
+- Efficient database queries.
+- Correct date handling.
+- Unique finding counting.
+- Duplicate event protection.
+- Consistent campaign permission checks.
+- Clear metric definitions.
+- Empty states for missing data.
+- Loading and error states.
+
+Do not hardcode dashboard values.
+
+Do not generate synthetic production metrics.
+
+If demo seed data is required, clearly separate demo benchmark data from real campaign analytics.
+
+If the project still uses an in-memory store, document its limitations and do not imply the dashboard provides durable historical analytics across deployments.
+
+10. User interface
+
+Build a polished governance analytics dashboard consistent with CampaignGuard.
+
+Suggested layout:
+
+Section 1 — Overview
+
+KPI cards:
+
+- Campaigns audited.
+- Confirmed violations.
+- First-pass approval rate.
+- Average correction rounds.
+- Average approval time.
+
+Section 2 — Governance Trends
+
+- Violations by category chart.
+- Approval trend chart.
+- Campaign comparison.
+
+Section 3 — Workflow Bottlenecks
+
+- Pending items by role.
+- Average waiting duration.
+- Oldest pending Change Orders.
+
+Section 4 — Recurring Issues
+
+- Most common violation categories.
+- Campaigns affected.
+- Links to relevant findings.
+
+Section 5 — Operational Performance
+
+- Creator correction turnaround.
+- Reviewer approval turnaround.
+- Completed vs pending Change Orders.
+
+Use appropriate charts, concise labels and readable formatting.
+
+Do not overcrowd the page.
+
+11. Performance and correctness
+
+- Avoid loading all historical records into the browser unnecessarily.
+- Use efficient aggregation.
+- Add pagination for large tables.
+- Validate filter parameters.
+- Avoid N+1 database queries.
+- Handle missing timestamps.
+- Handle campaigns with incomplete workflows.
+- Handle zero denominators safely.
+- Ensure analytics are recalculated from authoritative records or safely cached with invalidation.
+
+12. Testing requirements
+
+Test at minimum:
+
+1. Empty dashboard.
+2. One completed campaign.
+3. Multiple campaigns.
+4. Campaign with multiple asset versions.
+5. Duplicate finding events.
+6. Rejected AI finding.
+7. Confirmed violation.
+8. Asset approved on first review.
+9. Asset approved after corrections.
+10. Asset still pending.
+11. Campaign with incomplete audit history.
+12. Date-range filters.
+13. Campaign filters.
+14. Role-based access restrictions.
+15. Correct average approval-time calculations.
+16. Correct correction-round calculations.
+17. Correct waiting-time calculations.
+
+Verify all formulas against manually calculated test records.
+
+13. Non-negotiable constraints
+
+- Preserve all Round 2 functionality.
+- Use actual campaign data.
+- Use actual audit and workflow events.
+- Do not hardcode KPI numbers.
+- Do not count duplicate findings.
+- Do not include rejected AI suggestions as confirmed violations.
+- Do not fabricate historical metrics.
+- Do not introduce opaque readiness scores.
+- Do not build speculative predictive AI.
+- Do not expose data across unauthorized campaigns.
+- Do not redesign the entire application.
+- Do not claim untested calculations are correct.
+
+14. Completion report
+
+Provide:
+
+1. Data sources used.
+2. Metric formulas.
+3. Aggregation services created.
+4. Files created and modified.
+5. API endpoints.
+6. Dashboard components.
+7. Filters implemented.
+8. Permission checks.
+9. Test data and calculation verification.
+10. Test results.
+11. Known limitations.
+12. Steps to demonstrate the dashboard.
+
+Implement this feature inside the existing CampaignGuard project, not as a separate analytics prototype.

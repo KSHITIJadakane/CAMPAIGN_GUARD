@@ -1,0 +1,98 @@
+ROUND 3 — THE FINAL ROUND
+
+Round 3 opens 12:00 AM 28 October and closes 12:00 AM 31 October — midnight at the end of Friday the 30th. That is 72 hours. Submissions close exactly then. There is no late window and no extension.
+
+What this round is
+
+Round 2 proved your idea runs. Round 3 decides whether it is a product. You are not starting anything new and you are not changing direction — you are finishing what you already submitted. A judge will open your link and use it on their own, with nobody from your team explaining anything.
+
+What to do in these 72 hours
+
+1. Deliver the three improvements you named at Round 2. Exactly those three. This round is measured against what you committed to, not against what turned out to be easier once you started. If one is genuinely impossible, say so in your PDF and say why.
+2. Finish the features you left open. Close the loose ends. A feature that half-works counts against you more than a feature you left out and declared.
+3. Make it hold up without you. Bad input, an empty state, a refresh, the same action twice — a judge will do all of it. Nothing should break or hang.
+4. Tighten the interface. Someone who did not build it must be able to complete the main journey without a walkthrough.
+5. Test the main journeys end to end and fix what the testing finds.
+6. Write the documentation. Someone else must be able to clone the repository and run it from your README.
+
+What to submit
+
+One submission for the whole team, made by the team leader. Members do not submit separately.
+
+• The final working project link — deployed and open to a judge. If you cannot deploy, give a reliable executable with instructions.
+• The final source-code repository
+• The final product PDF
+• The complete list of features you built
+• A technical architecture and implementation summary
+• The improvements you completed after Round 2, including the three you named
+• Testing details
+• A product roadmap and future development plan
+
+Everything on that list has to arrive before the deadline. A missing item is a missing item, not something to send afterwards.
+
+How it is marked — 100 points
+
+• Completeness of the product — 25
+• The three improvements delivered — 20
+• Reliability under normal use — 20
+• Usability and real-world fit — 20
+• Documentation and roadmap — 15
+
+A few things that decide the round
+
+• The product must be built inside the event window. We check, and we do not discuss how.
+• No social media posts, no LinkedIn or Instagram requirement, no video demo. Only the list above..
+• The judges' decision is final.
+
+— Team We Code Coders
+
+@all
+Round 3 submission link is live Now: https://forms.gle/FxhT5Z1NupvGTGSw6
+
+Round 3 starts from 27th oct 11:59pm and closes 30th October 11:59pm . That is 72 hours. Submissions close exactly then. There is no late window and no extension.
+
+What this round is
+
+Round 2 proved your idea runs. Round 3 decides whether it is a product. You are not starting anything new and you are not changing direction — you are finishing what you already submitted. A judge will open your link and use it on their own, with nobody from your team explaining anything.
+
+What to do in these 72 hours
+
+1. Deliver the three improvements you named at Round 2. Exactly those three. This round is measured against what you committed to, not against what turned out to be easier once you started. If one is genuinely impossible, say so in your PDF and say why.
+2. Finish the features you left open. Close the loose ends. A feature that half-works counts against you more than a feature you left out and declared.
+3. Make it hold up without you. Bad input, an empty state, a refresh, the same action twice — a judge will do all of it. Nothing should break or hang.
+4. Tighten the interface. Someone who did not build it must be able to complete the main journey without a walkthrough.
+5. Test the main journeys end to end and fix what the testing finds.
+6. Write the documentation. Someone else must be able to clone the repository and run it from your README.
+
+What to submit
+
+One submission for the whole team, made by the team leader. Members do not submit separately.
+
+* The final working project link — deployed and open to a judge. If you cannot deploy, give a reliable executable with instructions.
+* The final source-code repository
+* The final product PDF
+* The complete list of features you built
+* A technical architecture and implementation summary
+* The improvements you completed after Round 2, including the three you named
+* Testing details
+* A product roadmap and future development plan
+
+Everything on that list has to arrive before the deadline. A missing item is a missing item, not something to send afterwards.
+
+How it is marked — 100 points
+
+* Completeness of the product — 25
+* The three improvements delivered — 20
+* Reliability under normal use — 20
+* Usability and real-world fit — 20
+* Documentation and roadmap — 15
+
+A few things that decide the round
+
+* The product must be built inside the event window. We check, and we do not discuss how.
+* No social media posts, no LinkedIn or Instagram requirement, no video demo. Only the list above..
+* The judges' decision is final.
+
+— Team We Code Coders
+
+@all
