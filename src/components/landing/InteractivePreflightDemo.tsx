@@ -455,7 +455,7 @@ export function InteractivePreflightDemo() {
                 </span>
               </div>
               <span className="truncate max-w-[240px] text-graphite bg-paper px-2 py-0.5 rounded border border-mist">
-                sha256:{scenario.sha256.substring(0, 16)}...
+                sha256:{scenario.sha256 ? scenario.sha256.substring(0, 16) : "pending"}...
               </span>
             </div>
           </div>

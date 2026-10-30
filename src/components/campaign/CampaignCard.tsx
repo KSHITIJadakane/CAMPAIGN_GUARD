@@ -57,7 +57,7 @@ export function CampaignCard({ campaign, onSelect }: CampaignCardProps) {
           <div>
             <span className="text-ash block text-[10px] uppercase">Active Pack</span>
             <span className="text-ink font-medium">
-              {latestPack ? `Rev ${latestPack.revision} [${latestPack.packHash.slice(0, 8)}]` : "None submitted"}
+              {latestPack ? `Rev ${latestPack.revision} [${latestPack.packHash ? latestPack.packHash.slice(0, 8) : "unsealed"}]` : "None submitted"}
             </span>
           </div>
           <div>

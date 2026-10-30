@@ -158,10 +158,10 @@ export function ApprovalPanel({ campaign, onApproved, onNavigateTab, onResetDemo
           <div className="p-2.5 bg-paper rounded-lg border border-mist">
             <span className="text-[10px] uppercase text-ash block">Approval Binding Hash</span>
             <span className="font-semibold text-charcoal">
-              {latestApproval ? `Lock #${latestApproval.id.slice(-6)}` : "Not locked yet"}
+              {latestApproval?.id ? `Lock #${latestApproval.id.slice(-6)}` : "Not locked yet"}
             </span>
             <span className="text-[11px] text-charcoal block">
-              {latestApproval ? new Date(latestApproval.approvedAt).toLocaleTimeString() : "Awaiting signature"}
+              {latestApproval?.approvedAt ? new Date(latestApproval.approvedAt).toLocaleTimeString() : "Awaiting signature"}
             </span>
           </div>
         </div>

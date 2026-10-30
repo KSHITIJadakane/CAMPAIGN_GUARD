@@ -923,8 +923,8 @@ export const memoryStore = {
         const stillPresent = formattedNewFindings.find(
           (nf) =>
             nf.layer === issue.layer &&
-            (nf.issue.toLowerCase().includes(issue.issue.toLowerCase().slice(0, 15)) ||
-              issue.issue.toLowerCase().includes(nf.issue.toLowerCase().slice(0, 15)))
+            ((nf.issue || "").toLowerCase().includes((issue.issue || "").toLowerCase().slice(0, 15)) ||
+              (issue.issue || "").toLowerCase().includes((nf.issue || "").toLowerCase().slice(0, 15)))
         );
 
         if (stillPresent) {

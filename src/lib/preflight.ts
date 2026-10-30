@@ -133,7 +133,7 @@ export async function runFullPreflightInspection(input: PreflightInspectionInput
   // Merge findings, avoiding duplicate issues
   for (const gf of geminiFindings) {
     const isDuplicate = findings.some(
-      (f) => f.layer === gf.layer && (f.issue.toLowerCase().includes(gf.issue.toLowerCase().slice(0, 15)) || gf.issue.toLowerCase().includes(f.issue.toLowerCase().slice(0, 15)))
+      (f) => f.layer === gf.layer && (((f.issue || "").toLowerCase().includes((gf.issue || "").toLowerCase().slice(0, 15))) || ((gf.issue || "").toLowerCase().includes((f.issue || "").toLowerCase().slice(0, 15))))
     );
     if (!isDuplicate) {
       findings.push(gf);
