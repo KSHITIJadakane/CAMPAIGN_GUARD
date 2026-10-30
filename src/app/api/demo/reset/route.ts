@@ -2,8 +2,23 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { memoryStore } from "@/lib/store";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const body = await req.json().catch(() => ({}));
+    const targetCampaignId = body?.campaignId || "camp_ecosip_01";
+
+    // Demo Endpoint Protection: Restrict reset strictly to benchmark scenarios
+    if (targetCampaignId !== "camp_ecosip_01") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Forbidden: State reset is strictly restricted to the designated evaluation benchmark scenario ('camp_ecosip_01'). Production and custom campaign IDs ('${targetCampaignId}') cannot be reset.`,
+          allowedBenchmark: "camp_ecosip_01",
+        },
+        { status: 403 }
+      );
+    }
+
     const memoryCampaign = memoryStore.resetDemo();
 
     try {

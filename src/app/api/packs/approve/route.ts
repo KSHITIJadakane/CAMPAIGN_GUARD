@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "campaignId and packId are required" }, { status: 400 });
     }
 
-    // Strict Server-Side RBAC Enforcement (Round 3 Enterprise Hardening)
+    // Strict Server-Side RBAC Enforcement: Role Parameter Guard
     // Creators and Brand Managers are explicitly forbidden from executing approvals
     if (reviewerRole !== "REVIEWER") {
       return NextResponse.json(
@@ -23,6 +23,31 @@ export async function POST(req: Request) {
         },
         { status: 403 }
       );
+    }
+
+    // Membership Roster Verification: Verify against client-side role impersonation
+    // The server checks the campaign's registered membership roster to verify caller identity
+    const memCamp = memoryStore.getCampaign(campaignId);
+    if (memCamp && memCamp.members && memCamp.members.length > 0 && reviewerName) {
+      const enrolledMember = memCamp.members.find(
+        (m) =>
+          m.name.toLowerCase() === reviewerName.toLowerCase() ||
+          m.email.toLowerCase() === reviewerName.toLowerCase()
+      );
+
+      // If caller is enrolled in the campaign roster with a non-Reviewer role, reject impersonation
+      if (enrolledMember && enrolledMember.role !== "REVIEWER") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Impersonation Rejected: User '${enrolledMember.name}' is registered as '${enrolledMember.role}' in the campaign membership roster and cannot execute Reviewer cryptographic seals.`,
+            requiredRole: "REVIEWER",
+            registeredRole: enrolledMember.role,
+            userName: enrolledMember.name,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     try {

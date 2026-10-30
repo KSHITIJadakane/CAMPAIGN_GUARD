@@ -107,8 +107,9 @@ async function runHardeningTests() {
     const malformedRes = await fetch(`${base}/api/invites/inv_invalid_fake_token/accept`);
     assert(malformedRes.status === 404, `Guard: Malformed invite token returns 404 Not Found (got ${malformedRes.status})`);
 
-    // 8. SERVER-SIDE RBAC 403 ENFORCEMENT
-    console.log("\n--- Step 6: Server-Side RBAC Enforcement (403 Test) ---");
+    // 8. SERVER-SIDE RBAC 403 ENFORCEMENT & ROSTER VERIFICATION
+    console.log("\n--- Step 6: Server-Side RBAC Enforcement & Roster Verification ---");
+    // Test A: Role parameter guard (non-Reviewer role parameter)
     const rbacBypassRes = await fetch(`${base}/api/packs/approve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -123,6 +124,22 @@ async function runHardeningTests() {
     const rbacBypassJson = await rbacBypassRes.json();
     assert(rbacBypassRes.status === 403, `Guard: Non-Reviewer approval rejected with HTTP 403 Forbidden (got ${rbacBypassRes.status})`);
     assert(rbacBypassJson.error?.includes("Only users with the REVIEWER role"), "Error message explicitly details RBAC restriction");
+
+    // Test B: Roster Impersonation Attack (Passing reviewerRole: REVIEWER but caller is registered CREATOR in roster)
+    const impersonationRes = await fetch(`${base}/api/packs/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        campaignId: "camp_ecosip_01",
+        packId: "pack_ecosip_rev1",
+        reviewerName: "Alex Chen", // Registered in campaign members as CREATOR
+        reviewerRole: "REVIEWER",  // Spoofed client parameter
+        notes: "Attempting role impersonation",
+      }),
+    });
+    const impersonationJson = await impersonationRes.json();
+    assert(impersonationRes.status === 403, `Guard: Roster verification rejects spoofed role with HTTP 403 (got ${impersonationRes.status})`);
+    assert(impersonationJson.error?.includes("Impersonation Rejected"), "Error message confirms server verified against membership roster");
 
     // 9. Creator Revision Flow
     console.log("\n--- Step 7: Creator Revision & Automated Re-Analysis ---");
@@ -163,14 +180,22 @@ async function runHardeningTests() {
     assert(approveRes.status === 200 && approveJson.success === true, "POST /api/packs/approve returns 200 OK for REVIEWER");
     assert(approveJson.approval?.packHash && approveJson.approval?.packHash.length >= 16, `SHA-256 seal computed: ${approveJson.approval?.packHash}`);
 
-    // 11. Reset Demo to pristine
-    console.log("\n--- Step 9: Clean Benchmark Reset ---");
+    // 11. Reset Demo & Protection Check
+    console.log("\n--- Step 9: Demo Endpoint Protection & Clean Reset ---");
+    // Test unauthorized reset on non-benchmark campaign
+    const unauthorizedResetRes = await fetch(`${base}/api/demo/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ campaignId: "camp_solarglow_02" })
+    });
+    assert(unauthorizedResetRes.status === 403, `Guard: Resetting non-benchmark campaign rejected with HTTP 403 (got ${unauthorizedResetRes.status})`);
+
     const cleanupRes = await fetch(`${base}/api/demo/reset`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ campaignId: "camp_ecosip_01" })
     });
-    assert(cleanupRes.status === 200, "POST /api/demo/reset succeeds and leaves clean state for next evaluation");
+    assert(cleanupRes.status === 200, "POST /api/demo/reset succeeds for benchmark and leaves clean state for next evaluation");
 
     console.log(`\n======================================================`);
     console.log(`  RESULT: ${passed}/${total} TEST ASSERTIONS PASSED (100%)`);

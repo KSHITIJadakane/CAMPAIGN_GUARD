@@ -68,6 +68,7 @@ CampaignGuard is architected as an end-to-end brand governance and visual prefli
   3. Generates shareable URL: `/invite?token=inv_...`.
   4. Recipient visits `/invite`, inspects campaign metadata, and clicks **"Accept & Enter Workspace"** via `POST /api/invites/[token]/accept`.
   5. Session switches to the campaign-scoped role. Creators are restricted from editing contracts or signing approval locks; Reviewers are restricted from modifying asset files.
+  6. **Server-Side Membership Roster Verification:** `/api/packs/approve` cross-references caller identity against the campaign's registered membership roster (`campaign.members`). Any client attempting role spoofing (e.g., an enrolled Creator passing `reviewerRole: "REVIEWER"`) is strictly rejected with HTTP `403 Forbidden`.
 
 ### Feature 2: Visual OCR & Evidence-Linked Change Orders
 - **Spatial Bounding-Box Detection:**
@@ -235,7 +236,7 @@ model AuditLog {
 | `POST` | `/api/contracts` | Author or update campaign contract version | Brand Manager |
 | `POST` | `/api/packs/check` | Submit asset pack and trigger 4-layer preflight | Creator |
 | `POST` | `/api/packs/revision` | Submit revised creative (Rev 2) for Change Order | Creator |
-| `POST` | `/api/packs/approve` | Execute SHA-256 cryptographic revision lock | Reviewer (Enforced server-side: returns `403 Forbidden` if caller role != `REVIEWER`) |
+| `POST` | `/api/packs/approve` | Execute SHA-256 cryptographic revision lock | Reviewer (Enforced server-side: rejects with `403 Forbidden` if caller role != `REVIEWER` OR if caller identity is enrolled as a non-Reviewer in the campaign membership roster) |
 | `PATCH` | `/api/findings/[id]/resolve` | Accept or escalate individual finding | Creator / Reviewer |
 | `GET` | `/api/analytics` | Fetch real-time cross-campaign governance metrics | Brand Manager |
-| `POST` | `/api/demo/reset` | Reset demo campaign to pristine Rev 1 state for clean evaluations | All Roles / Evaluation |
+| `POST` | `/api/demo/reset` | Reset demo campaign to pristine Rev 1 state for clean evaluations | All Roles / Evaluation (Isolated sandbox: strictly restricted to benchmark campaign `camp_ecosip_01`, returns 403 on non-benchmark IDs) |

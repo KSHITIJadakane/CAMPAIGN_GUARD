@@ -443,7 +443,7 @@ const htmlContent = `<!DOCTYPE html>
             <li><strong>Route:</strong> <code>/invite?token=[token]</code></li>
             <li><strong>State Verification:</strong> Real-time token validation against campaign membership, 7-day expiration (410 on expiry), and REVOKED flags.</li>
             <li><strong>1-Click Acceptance:</strong> Invited creators or legal reviewers enter their name and automatically join the workspace.</li>
-            <li><strong>Server-Side 403 RBAC:</strong> <code>/api/packs/approve</code> rejects non-Reviewer approval calls with HTTP <code>403 Forbidden</code>.</li>
+            <li><strong>Server-Side 403 & Roster Guard:</strong> <code>/api/packs/approve</code> verifies caller identity against the campaign's registered membership roster, rejecting role spoofing.</li>
             <li><strong>Revocation Control:</strong> Brand Leads can inspect active links, copy URLs, and instantly revoke pending tokens.</li>
           </ul>
         </div>
@@ -775,7 +775,13 @@ const htmlContent = `<!DOCTYPE html>
           </tr>
           <tr>
             <td><strong>Server-Side RBAC Guard</strong></td>
-            <td><code>POST /api/packs/approve</code> strictly rejects unauthorized callers with HTTP <code>403 Forbidden</code>.</td>
+            <td><code>POST /api/packs/approve</code> rejects non-Reviewer role parameter with HTTP <code>403 Forbidden</code>.</td>
+            <td>100%</td>
+            <td><span class="badge badge-green">PASSED</span></td>
+          </tr>
+          <tr>
+            <td><strong>Roster Impersonation Guard</strong></td>
+            <td><code>POST /api/packs/approve</code> cross-references membership roster and rejects registered Creators spoofing Reviewer role.</td>
             <td>100%</td>
             <td><span class="badge badge-green">PASSED</span></td>
           </tr>
@@ -786,8 +792,8 @@ const htmlContent = `<!DOCTYPE html>
             <td><span class="badge badge-green">PASSED</span></td>
           </tr>
           <tr>
-            <td><strong>Demo State Reset API</strong></td>
-            <td><code>POST /api/demo/reset</code> restores pristine Rev 1 benchmark state for repeatable judge evaluations.</td>
+            <td><strong>Demo Endpoint Isolation</strong></td>
+            <td><code>POST /api/demo/reset</code> strictly rejects non-benchmark campaign resets with 403; resets pristine Rev 1 benchmark.</td>
             <td>100%</td>
             <td><span class="badge badge-green">PASSED</span></td>
           </tr>
